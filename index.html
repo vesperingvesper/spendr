@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Spendr — burn money, feel great, lose nothing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<style>
+  :root{
+    --felt:#12382B;        /* money-table green */
+    --felt-deep:#0D2A20;
+    --paper:#F4EFE2;       /* banknote paper */
+    --receipt:#FBFAF4;     /* thermal white */
+    --ink:#143124;         /* deep green-black */
+    --ink-soft:#4A6155;
+    --gold:#C9A227;        /* foil */
+    --gold-lite:#E6C75A;
+    --cash:#1F9D55;        /* positive green */
+    --decline:#C8553D;     /* terracotta red */
+    --line:rgba(20,49,36,.14);
+    --shadow:0 18px 50px rgba(0,0,0,.28);
+    --r:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Bricolage Grotesque",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 80% -10%, #1a4d3a 0%, transparent 55%),
+      radial-gradient(120% 90% at -10% 110%, #0a221a 0%, transparent 55%),
+      var(--felt);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"Space Mono",monospace}
+  .tnum{font-variant-numeric:tabular-nums}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  :focus-visible{outline:3px solid var(--gold-lite);outline-offset:2px;border-radius:6px}
+
+  /* ---------- INTRO ---------- */
+  #intro{
+    position:fixed;inset:0;z-index:50;
+    display:grid;place-items:center;padding:24px;
+    background:radial-gradient(120% 90% at 50% 0%, #1a4d3a 0%, var(--felt) 60%);
+  }
+  .intro-card{
+    width:min(560px,100%);background:var(--paper);border-radius:26px;
+    padding:40px 34px;box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,.5);
+    position:relative;overflow:hidden;
+  }
+  .intro-card::before{
+    content:"";position:absolute;inset:10px;border:1.5px dashed var(--gold);
+    border-radius:18px;opacity:.5;pointer-events:none;
+  }
+  .seal{
+    font-size:13px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--gold);font-weight:700;margin-bottom:14px;
+  }
+  .intro-card h1{
+    font-size:clamp(30px,6vw,44px);line-height:1.02;letter-spacing:-.02em;
+    font-weight:800;margin-bottom:8px;
+  }
+  .intro-card p.sub{color:var(--ink-soft);font-size:15px;margin-bottom:26px}
+  .amount-field{position:relative;margin-bottom:18px}
+  .amount-field .cur{
+    position:absolute;left:18px;top:50%;transform:translateY(-50%);
+    font-size:28px;font-weight:700;color:var(--ink-soft);
+  }
+  #budgetInput{
+    width:100%;font-family:"Space Mono",monospace;font-weight:700;
+    font-size:30px;padding:16px 16px 16px 46px;border-radius:14px;
+    border:2px solid var(--line);background:#fff;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  #budgetInput::placeholder{color:#b9bdaf}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+  .chip{
+    border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;
+    font-size:13px;font-weight:600;background:#fff;transition:.15s;
+  }
+  .chip:hover{border-color:var(--gold);background:#fffdf2;transform:translateY(-1px)}
+  .chip b{font-family:"Space Mono",monospace}
+  .start-btn{
+    width:100%;background:var(--ink);color:var(--paper);
+    font-size:18px;font-weight:700;padding:16px;border-radius:14px;
+    transition:.15s;letter-spacing:.01em;
+  }
+  .start-btn:hover{background:#0c2018;transform:translateY(-1px)}
+  .start-btn:active{transform:translateY(1px)}
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;max-width:1180px;margin:0 auto;padding:18px 18px 60px}
+  #app.live{display:block}
+
+  /* register */
+  .register{
+    position:sticky;top:12px;z-index:20;
+    background:linear-gradient(180deg,#16402F,#0F2F23);
+    border:1px solid rgba(230,199,90,.22);
+    border-radius:var(--r);padding:18px 22px;box-shadow:var(--shadow);
+    display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  }
+  .reg-main{flex:1 1 260px;min-width:200px}
+  .reg-label{
+    font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--gold-lite);font-weight:700;margin-bottom:2px;
+  }
+  #balance{
+    font-family:"Space Mono",monospace;font-weight:700;
+    font-size:clamp(34px,7vw,56px);line-height:1;color:#EAF3EC;
+    font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+    transition:color .2s;
+  }
+  #balance.broke{color:var(--decline)}
+  .reg-stats{display:flex;gap:26px}
+  .stat .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8fb0a1;font-weight:700}
+  .stat .v{font-family:"Space Mono",monospace;font-size:22px;font-weight:700;color:#EAF3EC;font-variant-numeric:tabular-nums}
+  .reg-tools{display:flex;gap:8px}
+  .icon-btn{
+    width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+    font-size:18px;transition:.15s;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.14)}
+
+  /* decline toast */
+  #toast{
+    position:fixed;left:50%;top:88px;transform:translate(-50%,-12px);
+    background:var(--decline);color:#fff;padding:11px 20px;border-radius:999px;
+    font-weight:700;font-size:14px;box-shadow:var(--shadow);z-index:40;
+    opacity:0;pointer-events:none;transition:.25s;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* layout */
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:22px;margin-top:22px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:4px 2px 14px}
+  .section-head h2{color:var(--paper);font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .section-head .hint{color:#9fbcae;font-size:13px}
+
+  .catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .card{
+    background:var(--paper);border-radius:16px;padding:16px 14px 14px;
+    text-align:left;position:relative;transition:transform .12s, box-shadow .12s;
+    border:1px solid rgba(255,255,255,.5);overflow:hidden;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.22)}
+  .card:active{transform:translateY(0) scale(.985)}
+  .card .emoji{font-size:34px;display:block;margin-bottom:8px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.12))}
+  .card .name{font-weight:700;font-size:15px;line-height:1.15;margin-bottom:2px}
+  .card .price{font-family:"Space Mono",monospace;font-weight:700;font-size:14px;color:var(--cash);font-variant-numeric:tabular-nums}
+  .card .owned{
+    position:absolute;top:10px;right:10px;background:var(--ink);color:var(--gold-lite);
+    font-family:"Space Mono",monospace;font-size:12px;font-weight:700;
+    min-width:24px;height:24px;padding:0 6px;border-radius:999px;display:grid;place-items:center;
+    transform:scale(0);transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+  .card.has .owned{transform:scale(1)}
+  .card.too-pricey{opacity:.5}
+  .card.flash{animation:pop .4s}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+  /* custom buy card */
+  .custom-card{
+    grid-column:1/-1;background:rgba(244,239,226,.08);
+    border:1.5px dashed rgba(230,199,90,.4);border-radius:16px;padding:14px;
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  }
+  .custom-card input{
+    font-family:inherit;font-size:14px;padding:11px 13px;border-radius:11px;
+    border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.95);color:var(--ink);
+  }
+  .custom-card input.cname{flex:1 1 160px;min-width:120px}
+  .custom-card input.cprice{flex:0 1 130px;width:130px;font-family:"Space Mono",monospace;font-weight:700;font-variant-numeric:tabular-nums}
+  .custom-card .add{
+    background:var(--gold);color:var(--ink);font-weight:700;font-size:14px;
+    padding:11px 18px;border-radius:11px;transition:.15s;flex:0 0 auto;
+  }
+  .custom-card .add:hover{background:var(--gold-lite)}
+
+  /* ---------- RECEIPT ---------- */
+  .receipt-wrap{position:relative}
+  .receipt{
+    background:var(--receipt);color:var(--ink);border-radius:6px 6px 0 0;
+    padding:22px 22px 8px;box-shadow:var(--shadow);position:relative;
+    max-height:none;
+  }
+  .receipt::after{ /* torn bottom edge */
+    content:"";display:block;height:14px;margin:8px -22px -8px;
+    background:
+      linear-gradient(135deg,var(--receipt) 50%,transparent 51%) 0 0/14px 14px repeat-x,
+      linear-gradient(-135deg,var(--receipt) 50%,transparent 51%) 0 0/14px 14px repeat-x;
+    filter:drop-shadow(0 4px 3px rgba(0,0,0,.12));
+  }
+  .receipt-head{text-align:center;border-bottom:1.5px dashed var(--line);padding-bottom:14px;margin-bottom:6px}
+  .receipt-head .logo{font-weight:800;font-size:22px;letter-spacing:.04em}
+  .receipt-head .tag{font-family:"Space Mono",monospace;font-size:11px;color:var(--ink-soft);margin-top:2px}
+  .receipt-head .date{font-family:"Space Mono",monospace;font-size:11px;color:var(--ink-soft);margin-top:6px}
+  #lines{font-family:"Space Mono",monospace;font-size:13px;list-style:none;padding:8px 0}
+  #lines li{display:flex;align-items:baseline;gap:6px;padding:4px 0;animation:print .35s ease both}
+  @keyframes print{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+  #lines .qn{flex:0 0 auto;max-width:62%}
+  #lines .qn .q{color:var(--ink-soft)}
+  #lines .dots{flex:1 1 auto;border-bottom:1.5px dotted var(--line);transform:translateY(-3px);min-width:14px}
+  #lines .amt{flex:0 0 auto;font-weight:700;font-variant-numeric:tabular-nums}
+  .receipt-empty{font-family:"Space Mono",monospace;font-size:13px;color:var(--ink-soft);text-align:center;padding:26px 0}
+  .receipt-tot{border-top:1.5px dashed var(--line);margin-top:4px;padding-top:12px;font-family:"Space Mono",monospace}
+  .receipt-tot .row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
+  .receipt-tot .row.big{font-size:17px;font-weight:700;margin-top:4px}
+  .receipt-tot .row .tnum{font-variant-numeric:tabular-nums}
+  .barcode{height:42px;margin:14px 0 4px;display:flex;gap:2px;align-items:stretch;justify-content:center}
+  .barcode i{display:block;width:2px;background:var(--ink)}
+  .receipt-foot{text-align:center;font-family:"Space Mono",monospace;font-size:11px;color:var(--ink-soft);padding-bottom:4px}
+  #vibe{font-weight:700;color:var(--cash);min-height:16px;transition:.2s}
+
+  .receipt-sticky{position:sticky;top:118px}
+  @media(max-width:860px){.receipt-sticky{position:static}}
+
+  .footer-note{text-align:center;color:#7ea08f;font-size:12.5px;margin-top:30px;line-height:1.5}
+  .footer-note b{color:var(--gold-lite)}
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-card">
+    <div class="seal">★ The Bank of Make-Believe ★</div>
+    <h1>How much are we<br>burning today?</h1>
+    <p class="sub">Pick a number — any number. None of it's real, all of it's yours to blow.</p>
+    <div class="amount-field">
+      <span class="cur" id="curSym">$</span>
+      <input id="budgetInput" class="tnum" inputmode="decimal" placeholder="1,000,000" autocomplete="off" />
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" data-amt="100">Pocket change <b>$100</b></button>
+      <button class="chip" data-amt="5000">A paycheck <b>$5K</b></button>
+      <button class="chip" data-amt="1000000">Lottery win <b>$1M</b></button>
+      <button class="chip" data-amt="1000000000">Billionaire <b>$1B</b></button>
+    </div>
+    <button class="start-btn" id="startBtn">Start spending →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<main id="app">
+  <section class="register" aria-label="Your balance">
+    <div class="reg-main">
+      <div class="reg-label">Money left to burn</div>
+      <div id="balance" class="tnum">$0</div>
+    </div>
+    <div class="reg-stats">
+      <div class="stat"><div class="k">Spent</div><div class="v tnum" id="spent">$0</div></div>
+      <div class="stat"><div class="k">Items</div><div class="v tnum" id="count">0</div></div>
+    </div>
+    <div class="reg-tools">
+      <button class="icon-btn" id="muteBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      <button class="icon-btn" id="resetBtn" title="New spree" aria-label="Start a new spree">↺</button>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div>
+      <div class="section-head">
+        <h2>The store</h2>
+        <span class="hint">Tap to buy. Buy again to stack.</span>
+      </div>
+      <div class="catalog" id="catalog"></div>
+    </div>
+
+    <aside class="receipt-wrap">
+      <div class="receipt-sticky">
+        <div class="receipt" id="receipt">
+          <div class="receipt-head">
+            <div class="logo">SPENDR</div>
+            <div class="tag">*** retail therapy, zero regret ***</div>
+            <div class="date" id="rdate"></div>
+          </div>
+          <ul id="lines"></ul>
+          <div class="receipt-empty" id="empty">Nothing yet.<br>Go on, treat yourself.</div>
+          <div class="receipt-tot" id="totals" style="display:none">
+            <div class="row"><span>SUBTOTAL</span><span class="tnum" id="subtotal">$0</span></div>
+            <div class="row"><span>FEELINGS TAX</span><span class="tnum">$0.00</span></div>
+            <div class="row big"><span>TOTAL BLOWN</span><span class="tnum" id="grandtotal">$0</span></div>
+            <div class="barcode" id="barcode"></div>
+            <div class="receipt-foot">
+              <div id="vibe"></div>
+              Thank you for your imaginary business
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <p class="footer-note">
+    Every cent here is fake. <b>Spend freely, lose nothing.</b><br>
+    A safe place to scratch the itch without touching your real wallet.
+  </p>
+</main>
+
+<div id="toast">Not enough cash for that 😬</div>
+
+<script>
+(() => {
+  "use strict";
+  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  // ---- catalog: a fun escalation from coffee to a space rocket ----
+  const CATALOG = [
+    {e:"☕", n:"Fancy coffee",        p:6},
+    {e:"🧋", n:"Bubble tea",          p:7},
+    {e:"🎟️", n:"Movie ticket",        p:16},
+    {e:"🍣", n:"Sushi dinner",        p:90},
+    {e:"🎧", n:"Wireless earbuds",    p:250},
+    {e:"👟", n:"Hyped sneakers",      p:420},
+    {e:"📱", n:"Latest phone",        p:1200},
+    {e:"👜", n:"Designer bag",        p:3800},
+    {e:"💻", n:"Maxed-out laptop",    p:4200},
+    {e:"⌚", n:"Gold watch",          p:14000},
+    {e:"💍", n:"Diamond ring",        p:32000},
+    {e:"🏎️", n:"Sports car",          p:240000},
+    {e:"🏠", n:"Beach house",         p:2200000},
+    {e:"🛥️", n:"Superyacht",          p:9000000},
+    {e:"🏝️", n:"Private island",      p:48000000},
+    {e:"✈️", n:"Private jet",         p:75000000},
+    {e:"🚀", n:"Trip to space",       p:450000},
+    {e:"🏟️", n:"A whole sports team", p:5000000000},
+  ];
+
+  let CUR = "$";
+  const fmt = (v) => {
+    const neg = v < 0; v = Math.abs(v);
+    const dec = (v % 1 !== 0 && v < 1000) ? 2 : 0;
+    const s = CUR + v.toLocaleString("en-US",{minimumFractionDigits:dec, maximumFractionDigits:dec});
+    return neg ? "-" + s : s;
+  };
+
+  const state = { budget:0, balance:0, spent:0, lines:new Map() };
+  let muted = false, audioCtx = null;
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const intro=$("intro"), app=$("app"), input=$("budgetInput");
+
+  // ---------- intro ----------
+  $("chips").addEventListener("click",(ev)=>{
+    const c = ev.target.closest(".chip"); if(!c) return;
+    input.value = Number(c.dataset.amt).toLocaleString("en-US");
+    begin();
+  });
+  input.addEventListener("input",()=>{
+    const raw = input.value.replace(/[^\d.]/g,"");
+    if(raw==="") { input.value=""; return; }
+    const num = parseFloat(raw);
+    const [i,d] = raw.split(".");
+    input.value = Number(i||0).toLocaleString("en-US") + (raw.includes(".") ? "."+(d||"") : "");
+  });
+  input.addEventListener("keydown",(e)=>{ if(e.key==="Enter") begin(); });
+  $("startBtn").addEventListener("click", begin);
+
+  function begin(){
+    const v = parseFloat(input.value.replace(/[^\d.]/g,""));
+    if(!v || v<=0){ input.focus(); input.style.borderColor="var(--decline)";
+      setTimeout(()=>input.style.borderColor="",600); return; }
+    state.budget = v; state.balance = v; state.spent = 0; state.lines.clear();
+    intro.style.display="none";
+    app.classList.add("live");
+    $("rdate").textContent = new Date().toLocaleString("en-US",
+      {month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    buildCatalog();
+    setBalanceInstant(v);
+    render();
+  }
+
+  // ---------- catalog ----------
+  const catEl = $("catalog");
+  function buildCatalog(){
+    catEl.innerHTML="";
+    CATALOG.forEach((item,idx)=>{
+      const b=document.createElement("button");
+      b.className="card"; b.dataset.idx=idx;
+      b.innerHTML = `<span class="owned">0</span>
+        <span class="emoji">${item.e}</span>
+        <span class="name">${item.n}</span>
+        <span class="price">${fmt(item.p)}</span>`;
+      b.addEventListener("click",(ev)=>buy(item.n,item.p,item.e,b,ev));
+      catEl.appendChild(b);
+    });
+    // custom buy
+    const cc=document.createElement("div");
+    cc.className="custom-card";
+    cc.innerHTML=`<input class="cname" id="cname" placeholder="Buy literally anything…" maxlength="40"/>
+      <input class="cprice tnum" id="cprice" inputmode="decimal" placeholder="price"/>
+      <button class="add" id="addCustom">Buy it</button>`;
+    catEl.appendChild(cc);
+    $("cprice").addEventListener("input",e=>{
+      const raw=e.target.value.replace(/[^\d.]/g,"");
+      e.target.value = raw==="" ? "" : Number(raw.split(".")[0]||0).toLocaleString("en-US")
+        + (raw.includes(".")?"."+(raw.split(".")[1]||""):"");
+    });
+    $("addCustom").addEventListener("click",buyCustom);
+    $("cname").addEventListener("keydown",e=>{if(e.key==="Enter")buyCustom();});
+    $("cprice").addEventListener("keydown",e=>{if(e.key==="Enter")buyCustom();});
+  }
+
+  function buyCustom(){
+    const name=($("cname").value||"").trim() || "Mystery splurge";
+    const price=parseFloat($("cprice").value.replace(/[^\d.]/g,""));
+    if(!price||price<=0){ $("cprice").focus(); return; }
+    const ok = buy(name, price, "🛍️", null, null);
+    if(ok){ $("cname").value=""; $("cprice").value=""; $("cname").focus(); }
+  }
+
+  // ---------- buying ----------
+  function buy(name, price, emoji, cardEl, ev){
+    if(price > state.balance + 1e-6){ decline(); return false; }
+    state.balance -= price;
+    state.spent  += price;
+    const key = name+"|"+price;
+    const ex = state.lines.get(key);
+    if(ex){ ex.qty++; } else { state.lines.set(key,{name,price,emoji,qty:1}); }
+
+    if(cardEl){
+      const o=cardEl.querySelector(".owned");
+      const total=[...state.lines.values()].filter(l=>l.name===name).reduce((s,l)=>s+l.qty,0);
+      o.textContent=total; cardEl.classList.add("has");
+      cardEl.classList.remove("flash"); void cardEl.offsetWidth; cardEl.classList.add("flash");
+    }
+    cheer(ev); chaching();
+    render(true);
+    return true;
+  }
+
+  function decline(){
+    const t=$("toast"); t.classList.add("show");
+    const bal=$("balance"); bal.style.color="var(--decline)";
+    if(!reduce){ bal.animate(
+      [{transform:"translateX(0)"},{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"translateX(0)"}],
+      {duration:280}); }
+    clearTimeout(decline._t);
+    decline._t=setTimeout(()=>{ t.classList.remove("show"); bal.style.color=""; },1400);
+    buzz();
+  }
+
+  // ---------- balance count animation ----------
+  let displayed=0, raf=null;
+  function setBalanceInstant(v){ displayed=v; $("balance").textContent=fmt(v); }
+  function animateBalance(to){
+    if(reduce){ setBalanceInstant(to); return; }
+    cancelAnimationFrame(raf);
+    const from=displayed, start=performance.now(), dur=550;
+    const step=(now)=>{
+      const t=Math.min(1,(now-start)/dur);
+      const e=1-Math.pow(1-t,3);
+      displayed=from+(to-from)*e;
+      $("balance").textContent=fmt(Math.round(displayed));
+      if(t<1) raf=requestAnimationFrame(step); else { displayed=to; $("balance").textContent=fmt(to); }
+    };
+    raf=requestAnimationFrame(step);
+  }
+
+  // ---------- render ----------
+  function render(spent){
+    animateBalance(state.balance);
+    $("balance").classList.toggle("broke", state.balance < state.budget*0.02 && state.spent>0);
+    $("spent").textContent=fmt(state.spent);
+    const count=[...state.lines.values()].reduce((s,l)=>s+l.qty,0);
+    $("count").textContent=count.toLocaleString("en-US");
+
+    // mark unaffordable cards
+    catEl.querySelectorAll(".card").forEach(c=>{
+      const it=CATALOG[+c.dataset.idx];
+      c.classList.toggle("too-pricey", it.p>state.balance+1e-6);
+    });
+
+    // receipt
+    const lines=$("lines"), empty=$("empty"), totals=$("totals");
+    const arr=[...state.lines.values()];
+    if(arr.length===0){ empty.style.display="block"; totals.style.display="none"; lines.innerHTML=""; return; }
+    empty.style.display="none"; totals.style.display="block";
+
+    // rebuild list (cheap; lists are short) but only animate the newest
+    lines.innerHTML="";
+    arr.forEach(l=>{
+      const li=document.createElement("li");
+      li.style.animation = reduce ? "none" : "";
+      li.innerHTML=`<span class="qn">${l.qty>1?`<span class="q">${l.qty}× </span>`:""}${escapeHtml(l.name)}</span>
+        <span class="dots"></span>
+        <span class="amt">${fmt(l.price*l.qty)}</span>`;
+      lines.appendChild(li);
+    });
+
+    $("subtotal").textContent=fmt(state.spent);
+    $("grandtotal").textContent=fmt(state.spent);
+    buildBarcode();
+    setVibe(count);
+  }
+
+  function setVibe(count){
+    const pctLeft = state.balance/state.budget;
+    let msg="💸 Treat-yourself energy", col="var(--cash)";
+    if(state.balance<=0){ msg="🔥 Flat broke. Magnificent."; col="var(--decline)"; }
+    else if(pctLeft<0.1){ msg="😎 Down to the last few — go big"; col="var(--gold)"; }
+    else if(count>=15){ msg="👑 Certified big spender"; col="var(--gold)"; }
+    else if(count>=6){ msg="🛍️ On a roll"; col="var(--cash)"; }
+    const v=$("vibe"); v.textContent=msg; v.style.color=col;
+  }
+
+  function buildBarcode(){
+    const bc=$("barcode");
+    if(bc.childElementCount) return; // draw once
+    let html="";
+    for(let i=0;i<48;i++){ html+=`<i style="width:${1+Math.round(Math.random()*2)}px;${Math.random()>.7?"opacity:.55":""}"></i>`; }
+    bc.innerHTML=html;
+  }
+
+  // ---------- confetti ----------
+  function cheer(ev){
+    if(reduce || typeof confetti!=="function") return;
+    let x=0.5,y=0.4;
+    if(ev){ x=ev.clientX/innerWidth; y=ev.clientY/innerHeight; }
+    confetti({ particleCount:42, spread:62, startVelocity:34, gravity:.9, scalar:.9,
+      origin:{x,y}, colors:["#C9A227","#E6C75A","#1F9D55","#F4EFE2","#2bbd6e"], disableForReducedMotion:true });
+  }
+
+  // ---------- sound (synth cha-ching) ----------
+  function ensureAudio(){ if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return audioCtx; }
+  function tone(freq,start,dur,gain,type="sine"){
+    const ctx=audioCtx; const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
+    const t=ctx.currentTime+start;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(gain,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.start(t); o.stop(t+dur+0.02);
+  }
+  function chaching(){
+    if(muted) return; const ctx=ensureAudio(); if(!ctx) return;
+    if(ctx.state==="suspended") ctx.resume();
+    tone(1318.5,0,0.16,0.18,"triangle");   // E6
+    tone(1760.0,0.05,0.22,0.16,"triangle"); // A6
+    tone(2637.0,0.05,0.18,0.07,"sine");     // sparkle
+  }
+  function buzz(){
+    if(muted) return; const ctx=ensureAudio(); if(!ctx) return;
+    if(ctx.state==="suspended") ctx.resume();
+    tone(180,0,0.14,0.12,"sawtooth"); tone(120,0.04,0.16,0.12,"sawtooth");
+  }
+
+  // ---------- tools ----------
+  $("muteBtn").addEventListener("click",function(){
+    muted=!muted; this.textContent=muted?"🔇":"🔊";
+  });
+  $("resetBtn").addEventListener("click",()=>{
+    app.classList.remove("live"); intro.style.display="grid";
+    input.value=""; input.focus();
+    $("barcode").innerHTML="";
+  });
+
+  function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+  input.focus();
+})();
+</script>
+</body>
+</html>
