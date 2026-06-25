@@ -302,6 +302,49 @@
   .em-foot{padding:18px 24px 22px;text-align:center;font-size:11.5px;color:var(--ink-soft);line-height:1.6}
   .em-foot a{color:var(--ink-soft)}
 
+  /* ---------- CASINO ---------- */
+  #casino{position:fixed;inset:0;z-index:72;display:none;place-items:center;padding:20px;background:rgba(8,24,18,.82);backdrop-filter:blur(7px)}
+  #casino.show{display:grid}
+  .cas-card{width:min(460px,100%);max-height:94vh;background:var(--paper);border-radius:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+  .cas-head{display:flex;align-items:center;gap:10px;padding:18px 22px 14px;border-bottom:1.5px dashed var(--line)}
+  .cas-head h3{font-size:20px;font-weight:800}
+  .cas-head .cash{margin-left:auto;font-family:"Space Mono",monospace;font-weight:700;font-size:13.5px;color:var(--cash);font-variant-numeric:tabular-nums}
+  .cas-body{overflow:auto;padding:18px 22px 22px}
+  .cas-tabs{display:flex;gap:8px;margin-bottom:16px}
+  .cas-tab{flex:1;padding:10px;border-radius:11px;font-weight:700;font-size:14px;background:#fff;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .cas-tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .bet-label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:7px}
+  .bet-input{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;margin-bottom:8px}
+  .bet-input span{font-family:"Space Mono",monospace;font-weight:700;font-size:18px;color:var(--ink-soft)}
+  .bet-input input{flex:1;border:none;background:none;font-family:"Space Mono",monospace;font-weight:700;font-size:18px;padding:13px 0;color:var(--ink);font-variant-numeric:tabular-nums;outline:none}
+  .bet-chips{display:flex;gap:7px;margin-bottom:16px}
+  .bet-chips button{flex:1;padding:8px;border-radius:9px;font-weight:700;font-size:13px;background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+  .bet-chips button:hover{border-color:var(--gold);background:#fffdf2}
+  .cas-panel{display:none}
+  .cas-panel.active{display:block}
+  .reels{display:flex;gap:10px;justify-content:center;background:var(--felt);border-radius:16px;padding:18px;margin:2px 0 14px}
+  .reel{width:72px;height:88px;background:var(--paper);border-radius:12px;display:grid;place-items:center;font-size:42px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,.18)}
+  .reel.spin{animation:reelb .25s linear infinite}
+  @keyframes reelb{0%,100%{filter:blur(0);transform:translateY(0)}50%{filter:blur(1.5px);transform:translateY(-1px)}}
+  .wheel-wrap{position:relative;width:230px;height:230px;margin:2px auto 16px}
+  .wheel{width:100%;height:100%;border-radius:50%;border:6px solid var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.3);transition:transform 3s cubic-bezier(.17,.67,.16,.99)}
+  .wheel-hub{position:absolute;top:50%;left:50%;width:46px;height:46px;border-radius:50%;background:var(--paper);border:3px solid var(--ink);transform:translate(-50%,-50%);display:grid;place-items:center;font-size:20px}
+  .wheel-ptr{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:22px solid var(--gold);z-index:3;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+  .color-pick{display:flex;gap:8px;margin-bottom:12px}
+  .color-pick button{flex:1;padding:12px;border-radius:11px;font-weight:700;font-size:14px;border:2px solid transparent;color:#fff;transition:.12s}
+  .color-pick button.red{background:#C8553D}
+  .color-pick button.black{background:#1c1c1c}
+  .color-pick button.sel{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.3)}
+  .play-btn{width:100%;background:var(--gold);color:var(--ink);font-weight:800;font-size:17px;padding:15px;border-radius:13px;transition:.15s}
+  .play-btn:hover:not(:disabled){background:var(--gold-lite);transform:translateY(-1px)}
+  .play-btn:active:not(:disabled){transform:translateY(1px)}
+  .play-btn:disabled{opacity:.45;cursor:not-allowed}
+  .cas-result{text-align:center;font-weight:700;font-size:16px;min-height:24px;margin:13px 0 2px;color:var(--ink-soft)}
+  .cas-result.win{color:var(--cash)}
+  .cas-result.lose{color:var(--decline)}
+  .cas-note{text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:10px;line-height:1.5}
+  .cas-note b{color:var(--gold)}
+
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -339,6 +382,7 @@
       <div class="stat"><div class="k">Orders</div><div class="v tnum" id="orderCount">0</div></div>
     </div>
     <div class="reg-tools">
+      <button class="icon-btn" id="casinoBtn" title="The Casino" aria-label="Open the casino">🎰</button>
       <button class="icon-btn" id="ordersBtn" title="Your orders" aria-label="View your orders">📦</button>
       <button class="icon-btn" id="muteBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
       <button class="icon-btn" id="resetBtn" title="New spree" aria-label="Start a new spree">↺</button>
@@ -470,6 +514,38 @@
     <div class="mail-foot">
       <button class="btn btn-ghost" id="mailCopy" style="flex:1">Copy receipt</button>
       <button class="btn btn-primary" id="mailDone" style="flex:1">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CASINO -->
+<div id="casino" role="dialog" aria-modal="true">
+  <div class="cas-card">
+    <div class="cas-head"><h3>🎰 The Casino</h3><span class="cash" id="casCash">Cash: $0</span><button class="closeX" id="casClose" aria-label="Close">×</button></div>
+    <div class="cas-body">
+      <div class="cas-tabs">
+        <button class="cas-tab active" data-tab="slots">🎰 Slots</button>
+        <button class="cas-tab" data-tab="roulette">🎡 Roulette</button>
+      </div>
+      <div class="bet-label">Your bet</div>
+      <div class="bet-input"><span>$</span><input id="betInput" class="tnum" inputmode="decimal" placeholder="0" autocomplete="off"/></div>
+      <div class="bet-chips">
+        <button data-pct="0.1">10%</button>
+        <button data-pct="0.25">25%</button>
+        <button data-pct="0.5">50%</button>
+        <button data-pct="1">Max</button>
+      </div>
+      <div class="cas-panel active" id="panel-slots">
+        <div class="reels"><div class="reel" id="reel0">🍒</div><div class="reel" id="reel1">🔔</div><div class="reel" id="reel2">⭐</div></div>
+        <button class="play-btn" id="spinSlots">Spin the reels</button>
+      </div>
+      <div class="cas-panel" id="panel-roulette">
+        <div class="wheel-wrap"><div class="wheel-ptr"></div><div class="wheel" id="wheel"></div><div class="wheel-hub">🎯</div></div>
+        <div class="color-pick"><button class="red sel" data-color="red">Bet Red</button><button class="black" data-color="black">Bet Black</button></div>
+        <button class="play-btn" id="spinWheel">Spin the wheel</button>
+      </div>
+      <div class="cas-result" id="casResult">Place a bet and play.</div>
+      <div class="cas-note">It's all pretend money — and the odds here are <b>generously</b> in your favor. Winnings go straight to your balance.</div>
     </div>
   </div>
 </div>
@@ -866,9 +942,114 @@
   $("mailCopy").addEventListener("click",copyReceipt);
   emailEl.addEventListener("click",e=>{if(e.target===emailEl)emailEl.classList.remove("show");});
 
+  /* ---------- CASINO ---------- */
+  const casino=$("casino");
+  const SLOT=["🍒","🍋","🔔","⭐","💎","7️⃣"],JACK="7️⃣",NONJACK=SLOT.filter(s=>s!==JACK);
+  let rouletteColor="red",wheelRot=0,casinoBusy=false;
+  const ROU=[{n:0,c:"green"}];for(let i=1;i<=14;i++)ROU.push({n:i,c:i%2?"red":"black"});
+  (function(){const seg=360/ROU.length;
+    const stops=ROU.map((s,i)=>{const col=s.c==="red"?"#C8553D":s.c==="black"?"#1c1c1c":"#1F9D55";return `${col} ${i*seg}deg ${(i+1)*seg}deg`;});
+    $("wheel").style.background=`conic-gradient(${stops.join(",")})`;})();
+
+  function openCasino(){updateCasCash();flashResult("Place a bet and play.","");casino.classList.add("show");setTimeout(()=>$("betInput").focus(),50);}
+  function closeCasino(){if(!casinoBusy)casino.classList.remove("show");}
+  function updateCasCash(){$("casCash").textContent="Cash: "+fmt(available());}
+  function flashResult(msg,cls){const r=$("casResult");r.textContent=msg;r.className="cas-result"+(cls?" "+cls:"");}
+  $("casinoBtn").addEventListener("click",openCasino);
+  $("casClose").addEventListener("click",closeCasino);
+  casino.addEventListener("click",e=>{if(e.target===casino)closeCasino();});
+
+  casino.querySelectorAll(".cas-tab").forEach(t=>t.addEventListener("click",()=>{
+    if(casinoBusy)return;
+    casino.querySelectorAll(".cas-tab").forEach(x=>x.classList.toggle("active",x===t));
+    const tab=t.dataset.tab;
+    $("panel-slots").classList.toggle("active",tab==="slots");
+    $("panel-roulette").classList.toggle("active",tab==="roulette");
+  }));
+  $("betInput").addEventListener("input",e=>{const raw=e.target.value.replace(/[^\d.]/g,"");
+    e.target.value=raw===""?"":Number(raw.split(".")[0]||0).toLocaleString("en-US")+(raw.includes(".")?"."+(raw.split(".")[1]||""):"");});
+  casino.querySelectorAll(".bet-chips button").forEach(b=>b.addEventListener("click",()=>{
+    const amt=Math.floor(available()*parseFloat(b.dataset.pct));
+    $("betInput").value=amt>0?amt.toLocaleString("en-US"):"";}));
+  casino.querySelectorAll(".color-pick button").forEach(b=>b.addEventListener("click",()=>{
+    if(casinoBusy)return;rouletteColor=b.dataset.color;
+    casino.querySelectorAll(".color-pick button").forEach(x=>x.classList.toggle("sel",x===b));}));
+
+  function getBet(){const v=parseFloat(($("betInput").value||"").replace(/[^\d.]/g,""));return isNaN(v)?0:v;}
+  function validBet(){
+    const bet=getBet();
+    if(bet<=0){flashResult("Enter a bet first.","lose");return 0;}
+    if(bet>available()+1e-6){flashResult("That's more than your cash.","lose");buzz();return 0;}
+    return bet;
+  }
+  function lockCasino(b){
+    $("spinSlots").disabled=b;$("spinWheel").disabled=b;
+    casino.querySelectorAll(".bet-chips button,.color-pick button,.cas-tab,.closeX").forEach(x=>x.style.pointerEvents=b?"none":"");
+  }
+  function settle(bet,mult){
+    state.balance+=bet*mult-bet;
+    animateBalance(state.balance);refreshAfford();updateCasCash();
+    if(mult>0){burstCenter(0.5);successChord();}else buzz();
+  }
+
+  // SLOTS
+  function resolveSlots(){
+    const r=Math.random(),rand=a=>a[Math.floor(Math.random()*a.length)];
+    let mult,syms;
+    if(r<0.30){const pool=[...SLOT];syms=[];for(let k=0;k<3;k++){const x=rand(pool);syms.push(x);pool.splice(pool.indexOf(x),1);}mult=0;}
+    else if(r<0.72){const a=rand(SLOT);let b=rand(SLOT);while(b===a)b=rand(SLOT);syms=[a,a,b].sort(()=>Math.random()-0.5);mult=1.5;}
+    else if(r<0.94){const a=rand(NONJACK);syms=[a,a,a];mult=2.5;}
+    else {syms=[JACK,JACK,JACK];mult=8;}
+    return {syms,mult};
+  }
+  function finishSlots(bet,out){
+    const gain=fmt(bet*out.mult-bet);
+    if(out.mult>=8)flashResult(`🎰 JACKPOT! +${gain}`,"win");
+    else if(out.mult>=2.5)flashResult(`🎉 Triple match! +${gain}`,"win");
+    else if(out.mult>0)flashResult(`✨ Match! +${gain}`,"win");
+    else flashResult(`No luck — ${fmt(-bet)}`,"lose");
+    settle(bet,out.mult);casinoBusy=false;lockCasino(false);
+  }
+  $("spinSlots").addEventListener("click",()=>{
+    if(casinoBusy)return;const bet=validBet();if(!bet)return;
+    casinoBusy=true;lockCasino(true);flashResult("Spinning…","");
+    const out=resolveSlots(),reels=[$("reel0"),$("reel1"),$("reel2")];
+    if(reduce){reels.forEach((r,i)=>r.textContent=out.syms[i]);finishSlots(bet,out);return;}
+    reels.forEach(r=>r.classList.add("spin"));
+    const iv=reels.map(r=>setInterval(()=>{r.textContent=SLOT[Math.floor(Math.random()*SLOT.length)];},80));
+    const stop=(i,delay)=>setTimeout(()=>{clearInterval(iv[i]);reels[i].classList.remove("spin");reels[i].textContent=out.syms[i];tick();if(i===2)finishSlots(bet,out);},delay);
+    stop(0,700);stop(1,1000);stop(2,1350);
+  });
+
+  // ROULETTE
+  $("spinWheel").addEventListener("click",()=>{
+    if(casinoBusy)return;const bet=validBet();if(!bet)return;
+    casinoBusy=true;lockCasino(true);flashResult("Spinning…","");
+    const pick=rouletteColor,r=Math.random();
+    let resColor;
+    if(r<0.70)resColor=pick;else if(r<0.95)resColor=(pick==="red"?"black":"red");else resColor="green";
+    const cands=ROU.map((s,i)=>i).filter(i=>ROU[i].c===resColor);
+    const idx=cands[Math.floor(Math.random()*cands.length)];
+    const win=ROU[idx].c===pick,mult=win?2:0,seg=360/ROU.length;
+    const landed=ROU[idx];
+    const target=-(idx*seg+seg/2)+(Math.random()-0.5)*seg*0.6;
+    const finish=()=>{
+      if(win)flashResult(`🎉 Landed ${landed.n} ${landed.c}! +${fmt(bet*mult-bet)}`,"win");
+      else flashResult(`Landed ${landed.n} ${landed.c} — ${fmt(-bet)}`,"lose");
+      settle(bet,mult);casinoBusy=false;lockCasino(false);
+    };
+    const wheel=$("wheel");
+    if(reduce){wheel.style.transition="none";wheelRot=target;wheel.style.transform=`rotate(${target}deg)`;finish();return;}
+    wheel.style.transition="";
+    const delta=(((target-(wheelRot%360))%360)+360)%360;
+    wheelRot+=360*5+delta;
+    wheel.style.transform=`rotate(${wheelRot}deg)`;
+    setTimeout(finish,3050);
+  });
+
   /* ---------- TOOLS ---------- */
   $("muteBtn").addEventListener("click",function(){muted=!muted;this.textContent=muted?"🔇":"🔊";});
-  $("resetBtn").addEventListener("click",()=>{closeCheckout();ordEl.classList.remove("show");emailEl.classList.remove("show");
+  $("resetBtn").addEventListener("click",()=>{closeCheckout();ordEl.classList.remove("show");emailEl.classList.remove("show");casino.classList.remove("show");
     app.classList.remove("live");intro.style.display="grid";input.value="";input.focus();});
 
   /* ---------- CONFETTI ---------- */
