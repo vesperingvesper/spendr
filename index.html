@@ -100,18 +100,31 @@
     font-family:"Space Mono",monospace;font-size:12px;font-weight:700;min-width:24px;height:24px;padding:0 6px;
     border-radius:999px;display:grid;place-items:center;transform:scale(0);transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
   .card.has .owned{transform:scale(1)}
+  .card .save{position:absolute;top:8px;left:8px;width:27px;height:27px;border-radius:999px;display:grid;place-items:center;
+    font-size:15px;color:var(--ink-soft);background:rgba(255,255,255,.55);z-index:2;line-height:1;transition:.15s}
+  .card .save:hover{background:#fff;transform:scale(1.12)}
+  .card .save.on{color:var(--decline)}
   .card.too-pricey{opacity:.5}
   .card.flash{animation:pop .4s}
   @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
 
   .custom-card{grid-column:1/-1;background:rgba(244,239,226,.08);border:1.5px dashed rgba(230,199,90,.4);
-    border-radius:16px;padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    border-radius:16px;padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:relative;}
   .custom-card input{font-family:inherit;font-size:14px;padding:11px 13px;border-radius:11px;
     border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.95);color:var(--ink);}
-  .custom-card input.cname{flex:1 1 160px;min-width:120px}
-  .custom-card input.cprice{flex:0 1 130px;width:130px;font-family:"Space Mono",monospace;font-weight:700;font-variant-numeric:tabular-nums}
+  .custom-card input.cname{flex:1 1 140px;min-width:110px}
+  .custom-card input.cprice{flex:0 1 120px;width:120px;font-family:"Space Mono",monospace;font-weight:700;font-variant-numeric:tabular-nums}
+  .custom-card .emoji-pick{flex:0 0 auto;width:46px;height:46px;border-radius:11px;background:#fff;border:1px solid rgba(255,255,255,.15);font-size:24px;display:grid;place-items:center;transition:.15s}
+  .custom-card .emoji-pick:hover{background:#fffdf2;transform:translateY(-1px)}
+  .custom-card .save-btn{flex:0 0 auto;background:transparent;border:1.5px solid rgba(230,199,90,.55);color:var(--gold-lite);font-weight:700;font-size:14px;padding:10px 14px;border-radius:11px;transition:.15s;}
+  .custom-card .save-btn:hover{background:rgba(230,199,90,.14)}
   .custom-card .add{background:var(--gold);color:var(--ink);font-weight:700;font-size:14px;padding:11px 18px;border-radius:11px;transition:.15s;flex:0 0 auto;}
   .custom-card .add:hover{background:var(--gold-lite)}
+  .emoji-pop{position:absolute;bottom:calc(100% + 8px);left:14px;background:var(--paper);border-radius:14px;box-shadow:var(--shadow);
+    padding:10px;display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:8;max-width:316px}
+  .emoji-pop.show{display:grid}
+  .emoji-pop button{font-size:21px;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:none}
+  .emoji-pop button:hover{background:rgba(20,49,36,.09)}
 
   /* ---------- CART (paper panel) ---------- */
   .cart-sticky{position:sticky;top:118px}
@@ -225,10 +238,21 @@
   .track .lbl{font-weight:700;font-size:15px}
   .track .sub{font-family:"Space Mono",monospace;font-size:11.5px;color:var(--ink-soft)}
 
-  /* received */
+  /* received + unboxing */
   .step--received{align-items:center;text-align:center}
-  .parcel{font-size:74px;margin:8px 0 10px;animation:drop .6s cubic-bezier(.34,1.56,.64,1) both}
-  @keyframes drop{0%{transform:translateY(-40px) rotate(-8deg);opacity:0}100%{transform:translateY(0) rotate(0);opacity:1}}
+  .unbox{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:150px;margin:2px 0 10px}
+  .loot{display:flex;flex-wrap:wrap;gap:12px 14px;justify-content:center;align-items:flex-end;max-width:340px;margin-bottom:8px}
+  .loot .li{font-size:40px;position:relative;line-height:1}
+  .loot .li.pop{animation:loot .55s cubic-bezier(.34,1.65,.5,1) backwards}
+  @keyframes loot{from{opacity:0;transform:scale(0) translateY(26px)}to{opacity:1;transform:none}}
+  .loot .li .qq{position:absolute;bottom:-6px;right:-10px;background:var(--ink);color:var(--gold-lite);
+    font-family:"Space Mono",monospace;font-size:11px;font-weight:700;padding:1px 6px;border-radius:999px}
+  .loot .more{font-size:14px;font-weight:700;color:var(--ink-soft);align-self:center}
+  .box{font-size:64px;line-height:1}
+  .box.shake{animation:boxshake .55s ease}
+  @keyframes boxshake{0%,100%{transform:rotate(0) translateY(0)}15%{transform:rotate(-8deg)}30%{transform:rotate(8deg)}45%{transform:rotate(-6deg) translateY(-3px)}60%{transform:rotate(6deg)}75%{transform:rotate(-3deg)}}
+  .box.open{animation:boxopen .4s ease forwards}
+  @keyframes boxopen{to{transform:scale(.82) translateY(6px);opacity:.5}}
   .r-title{font-size:25px;font-weight:800;margin-bottom:4px}
   .r-sub{color:var(--ink-soft);font-size:14px;margin-bottom:20px}
   .r-line{font-family:"Space Mono",monospace;font-size:12.5px;color:var(--ink-soft);margin-bottom:18px}
@@ -280,6 +304,22 @@
   .em-foot{padding:18px 24px 22px;text-align:center;font-size:11.5px;color:var(--ink-soft);line-height:1.6}
   .em-foot a{color:var(--ink-soft)}
 
+  /* ---------- SAVED / WISHLIST ---------- */
+  .icon-btn .badge{position:absolute;top:-5px;right:-5px;background:var(--gold);color:var(--ink);
+    font-family:"Space Mono",monospace;font-size:10px;font-weight:700;min-width:17px;height:17px;padding:0 4px;border-radius:999px;display:grid;place-items:center}
+  .ord-head .head-act{margin-left:auto;margin-right:8px;font-size:13px;font-weight:700;color:var(--ink);border:1.5px solid var(--line);border-radius:9px;padding:6px 11px}
+  .ord-head .head-act:hover{border-color:var(--gold);background:#fffdf2}
+  .sv-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1.5px dashed var(--line)}
+  .sv-item:last-child{border-bottom:none}
+  .sv-item .sv-e{font-size:27px;flex:0 0 auto}
+  .sv-item .sv-n{flex:1 1 auto;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sv-item .sv-p{font-family:"Space Mono",monospace;font-weight:700;font-size:13px;color:var(--cash);flex:0 0 auto}
+  .sv-item .sv-add{flex:0 0 auto;background:var(--ink);color:var(--paper);font-weight:700;font-size:12.5px;padding:8px 12px;border-radius:9px}
+  .sv-item .sv-add:hover{background:#0c2018}
+  .sv-item .sv-add:disabled{opacity:.4;cursor:not-allowed}
+  .sv-item .sv-x{flex:0 0 auto;width:28px;height:28px;border-radius:8px;color:var(--ink-soft);font-size:17px;display:grid;place-items:center}
+  .sv-item .sv-x:hover{background:rgba(200,85,61,.12);color:var(--decline)}
+
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -317,6 +357,7 @@
       <div class="stat"><div class="k">Orders</div><div class="v tnum" id="orderCount">0</div></div>
     </div>
     <div class="reg-tools">
+      <button class="icon-btn" id="savedBtn" title="Saved items" aria-label="View saved items">♡<span class="badge" id="savedBadge" style="display:none">0</span></button>
       <button class="icon-btn" id="ordersBtn" title="Your orders" aria-label="View your orders">📦</button>
       <button class="icon-btn" id="muteBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
       <button class="icon-btn" id="resetBtn" title="New spree" aria-label="Start a new spree">↺</button>
@@ -412,7 +453,7 @@
 
     <!-- received -->
     <section class="co-step step--received">
-      <div class="parcel">📦</div>
+      <div class="unbox"><div class="loot" id="loot"></div><div class="box" id="box">📦</div></div>
       <div class="r-title">Delivered!</div>
       <div class="r-sub" id="rMsg">That hit the spot.</div>
       <div class="r-line" id="rLine">Order #— · delivered just now</div>
@@ -452,6 +493,14 @@
   </div>
 </div>
 
+<!-- SAVED / WISHLIST -->
+<div id="saved" role="dialog" aria-modal="true">
+  <div class="ord-card">
+    <div class="ord-head"><h3>Saved for later</h3><button class="head-act" id="savedAddAll">Add all to cart</button><button class="closeX" id="savedClose" aria-label="Close">×</button></div>
+    <div class="ord-body" id="savedBody"></div>
+  </div>
+</div>
+
 <div id="toast">Not enough left for that 😬</div>
 
 <script>
@@ -485,7 +534,7 @@
     {e:"🏠", k:"Delivered",      s:"Enjoy responsibly"},
   ];
 
-  const state = { budget:0, balance:0, spent:0, cart:new Map(), orders:[], seq:1000 };
+  const state = { budget:0, balance:0, spent:0, cart:new Map(), orders:[], saved:[], seq:1000 };
   let muted=false, audioCtx=null;
 
   /* ---------- INTRO ---------- */
@@ -501,39 +550,70 @@
   function begin(){
     const v=parseFloat(input.value.replace(/[^\d.]/g,""));
     if(!v||v<=0){input.focus();input.style.borderColor="var(--decline)";setTimeout(()=>input.style.borderColor="",600);return;}
-    Object.assign(state,{budget:v,balance:v,spent:0,cart:new Map(),orders:[],seq:1000});
+    Object.assign(state,{budget:v,balance:v,spent:0,cart:new Map(),orders:[],saved:[],seq:1000});
     intro.style.display="none";app.classList.add("live");
-    buildCatalog();setBalanceInstant(v);render();
+    buildCatalog();setBalanceInstant(v);render();updateSavedUI();
   }
 
   /* ---------- CATALOG ---------- */
   const catEl=$("catalog");
+  const EMOJIS=["🛍️","👟","👜","⌚","💍","💎","👑","📱","💻","🎧","🎮","🕹️","📷","🚗","🏎️","🏠","✈️","🛥️","🚀","🎸","🎹","🎨","🖼️","📚","🍕","🍔","🍣","🍰","☕","🍷","🐶","🐱","🌸","💄","👗","👠","🧴","🪙","🎁","💐","⚽","🏀","🎾","🏝️","⛵","🛵","🚲","🧸"];
+  let customEmoji="🛍️";
   function buildCatalog(){
     catEl.innerHTML="";
     CATALOG.forEach((item,idx)=>{
       const b=document.createElement("button");
       b.className="card";b.dataset.idx=idx;
-      b.innerHTML=`<span class="owned">0</span><span class="emoji">${item.e}</span>
+      b.innerHTML=`<span class="save" role="button" tabindex="0" title="Save for later" aria-label="Save ${item.n}">♡</span>
+        <span class="owned">0</span><span class="emoji">${item.e}</span>
         <span class="name">${item.n}</span><span class="price">${fmt(item.p)}</span>`;
       b.addEventListener("click",ev=>addToCart(item.n,item.p,item.e,b,ev));
+      const heart=b.querySelector(".save");
+      heart.addEventListener("click",ev=>{ev.stopPropagation();toggleSave(item.n,item.p,item.e);});
+      heart.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();ev.stopPropagation();toggleSave(item.n,item.p,item.e);}});
       catEl.appendChild(b);
     });
     const cc=document.createElement("div");cc.className="custom-card";
-    cc.innerHTML=`<input class="cname" id="cname" placeholder="Buy literally anything…" maxlength="40"/>
+    cc.innerHTML=`<button class="emoji-pick" id="emojiPick" title="Pick an emoji">🛍️</button>
+      <input class="cname" id="cname" placeholder="Name your thing…" maxlength="40"/>
       <input class="cprice tnum" id="cprice" inputmode="decimal" placeholder="price"/>
-      <button class="add" id="addCustom">Add</button>`;
+      <button class="save-btn" id="saveCustom" title="Save for later">♡ Save</button>
+      <button class="add" id="addCustom">Add</button>
+      <div class="emoji-pop" id="emojiPop"></div>`;
     catEl.appendChild(cc);
+    customEmoji="🛍️";
+    const pop=$("emojiPop");
+    pop.innerHTML=EMOJIS.map(e=>`<button type="button">${e}</button>`).join("");
+    pop.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+      customEmoji=b.textContent;$("emojiPick").textContent=customEmoji;pop.classList.remove("show");}));
+    $("emojiPick").addEventListener("click",e=>{e.stopPropagation();pop.classList.toggle("show");});
+    document.addEventListener("click",e=>{if(!e.target.closest(".custom-card"))pop.classList.remove("show");});
     $("cprice").addEventListener("input",e=>{const raw=e.target.value.replace(/[^\d.]/g,"");
       e.target.value=raw===""?"":Number(raw.split(".")[0]||0).toLocaleString("en-US")+(raw.includes(".")?"."+(raw.split(".")[1]||""):"");});
     $("addCustom").addEventListener("click",addCustom);
+    $("saveCustom").addEventListener("click",saveCustom);
     $("cname").addEventListener("keydown",e=>{if(e.key==="Enter")addCustom();});
     $("cprice").addEventListener("keydown",e=>{if(e.key==="Enter")addCustom();});
   }
-  function addCustom(){
+  function readCustom(){
     const name=($("cname").value||"").trim()||"Mystery splurge";
     const price=parseFloat($("cprice").value.replace(/[^\d.]/g,""));
+    return {name,price};
+  }
+  function addCustom(){
+    const {name,price}=readCustom();
     if(!price||price<=0){$("cprice").focus();return;}
-    if(addToCart(name,price,"🛍️",null,null)){$("cname").value="";$("cprice").value="";$("cname").focus();}
+    if(addToCart(name,price,customEmoji,null,null)){$("cname").value="";$("cprice").value="";$("cname").focus();}
+  }
+  function saveCustom(){
+    const {name,price}=readCustom();
+    if(!price||price<=0){$("cprice").focus();return;}
+    if(!isSaved(name,price,customEmoji))state.saved.push({name,price,emoji:customEmoji});
+    updateSavedUI();
+    const btn=$("saveCustom");btn.textContent="Saved ✓";
+    chaching();
+    setTimeout(()=>btn.textContent="♡ Save",1300);
+    $("cname").value="";$("cprice").value="";$("cname").focus();
   }
 
   const cartTotal=()=>[...state.cart.values()].reduce((s,l)=>s+l.price*l.qty,0);
@@ -545,12 +625,9 @@
     const key=name+"|"+price;
     const ex=state.cart.get(key);
     if(ex)ex.qty++; else state.cart.set(key,{name,price,emoji,qty:1});
-    if(cardEl){
-      const o=cardEl.querySelector(".owned");
-      const tot=[...state.cart.values()].filter(l=>l.name===name).reduce((s,l)=>s+l.qty,0);
-      o.textContent=tot;cardEl.classList.add("has");
-      cardEl.classList.remove("flash");void cardEl.offsetWidth;cardEl.classList.add("flash");
-    }
+    syncBadges();
+    if(cardEl){cardEl.classList.remove("flash");void cardEl.offsetWidth;cardEl.classList.add("flash");}
+    else flashCardFor(name);
     cheer(ev);chaching();renderCart(true);refreshAfford();
     return true;
   }
@@ -728,7 +805,25 @@
     const msgs=["That hit the spot.","Worth every fake cent.","No regrets (there's nothing to regret).","Treat secured. 💅","Dopamine: delivered."];
     $("rMsg").textContent=msgs[Math.floor(Math.random()*msgs.length)];
     $("rLine").textContent=current.no+" · "+cartCount()+" item"+(cartCount()===1?"":"s")+" · delivered just now";
+    revealLoot();
     setTimeout(()=>$("coDone").focus(),60);
+  }
+  function revealLoot(){
+    const loot=$("loot"),box=$("box");
+    loot.innerHTML="";box.textContent="📦";box.classList.remove("open","shake");
+    const base=reduce?0:480;
+    if(!reduce){void box.offsetWidth;box.classList.add("shake");}
+    const shown=current.items.slice(0,14);
+    shown.forEach((l,i)=>{
+      const s=document.createElement("span");s.className="li pop";
+      s.style.animationDelay=(reduce?0:(base+i*95))+"ms";
+      s.innerHTML=l.emoji+(l.qty>1?`<span class="qq">×${l.qty}</span>`:"");
+      loot.appendChild(s);
+    });
+    const extra=current.items.length-shown.length;
+    if(extra>0){const m=document.createElement("span");m.className="li more pop";
+      m.style.animationDelay=(base+shown.length*95)+"ms";m.textContent="+"+extra+" more";loot.appendChild(m);}
+    setTimeout(()=>{box.classList.add("open");if(!reduce)burstCenter(0.5);},reduce?0:base);
   }
 
   function finalize(){
@@ -796,9 +891,52 @@
   $("mailCopy").addEventListener("click",copyReceipt);
   emailEl.addEventListener("click",e=>{if(e.target===emailEl)emailEl.classList.remove("show");});
 
+  /* ---------- SAVED / WISHLIST ---------- */
+  const savedEl=$("saved");
+  function isSaved(name,price,emoji){return state.saved.some(s=>s.name===name&&s.price===price&&s.emoji===emoji);}
+  function toggleSave(name,price,emoji){
+    const i=state.saved.findIndex(s=>s.name===name&&s.price===price&&s.emoji===emoji);
+    if(i>=0)state.saved.splice(i,1); else {state.saved.push({name,price,emoji});chaching();}
+    updateSavedUI();
+    if(savedEl.classList.contains("show"))openSaved();
+  }
+  function updateSavedUI(){
+    const n=state.saved.length,b=$("savedBadge");
+    if(n>0){b.style.display="grid";b.textContent=n;}else b.style.display="none";
+    catEl.querySelectorAll(".card").forEach(c=>{
+      const it=CATALOG[+c.dataset.idx];if(!it)return;
+      const heart=c.querySelector(".save");if(!heart)return;
+      const on=isSaved(it.n,it.p,it.e);heart.classList.toggle("on",on);heart.textContent=on?"♥":"♡";
+    });
+  }
+  function openSaved(){
+    const body=$("savedBody");
+    if(state.saved.length===0){body.innerHTML=`<div class="ord-empty">Nothing saved yet.<br>Tap the ♡ on anything you're eyeing.</div>`;$("savedAddAll").style.display="none";}
+    else{$("savedAddAll").style.display="";
+      body.innerHTML=state.saved.map((s,i)=>{
+        const afford=s.price<=available()+1e-6;
+        return `<div class="sv-item"><span class="sv-e">${s.emoji}</span>
+          <span class="sv-n">${escapeHtml(s.name)}</span><span class="sv-p">${fmt(s.price)}</span>
+          <button class="sv-add" data-i="${i}" ${afford?"":"disabled title='Not enough left'"}>Add to cart</button>
+          <button class="sv-x" data-rm="${i}" title="Remove" aria-label="Remove ${escapeHtml(s.name)}">×</button></div>`;}).join("");}
+    savedEl.classList.add("show");
+  }
+  $("savedBtn").addEventListener("click",openSaved);
+  $("savedClose").addEventListener("click",()=>savedEl.classList.remove("show"));
+  savedEl.addEventListener("click",e=>{if(e.target===savedEl)savedEl.classList.remove("show");});
+  $("savedAddAll").addEventListener("click",()=>{
+    let added=0;state.saved.forEach(s=>{if(addToCart(s.name,s.price,s.emoji,null,null))added++;});
+    if(added===0)decline(); else openSaved();
+  });
+  $("savedBody").addEventListener("click",e=>{
+    const add=e.target.closest(".sv-add"),rm=e.target.closest(".sv-x");
+    if(add){const s=state.saved[+add.dataset.i];if(s)addToCart(s.name,s.price,s.emoji,null,null);openSaved();}
+    else if(rm){state.saved.splice(+rm.dataset.rm,1);updateSavedUI();openSaved();}
+  });
+
   /* ---------- TOOLS ---------- */
   $("muteBtn").addEventListener("click",function(){muted=!muted;this.textContent=muted?"🔇":"🔊";});
-  $("resetBtn").addEventListener("click",()=>{closeCheckout();ordEl.classList.remove("show");emailEl.classList.remove("show");
+  $("resetBtn").addEventListener("click",()=>{closeCheckout();ordEl.classList.remove("show");emailEl.classList.remove("show");savedEl.classList.remove("show");
     app.classList.remove("live");intro.style.display="grid";input.value="";input.focus();});
 
   /* ---------- CONFETTI ---------- */
