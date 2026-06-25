@@ -100,10 +100,10 @@
     font-family:"Space Mono",monospace;font-size:12px;font-weight:700;min-width:24px;height:24px;padding:0 6px;
     border-radius:999px;display:grid;place-items:center;transform:scale(0);transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
   .card.has .owned{transform:scale(1)}
-  .card .save{position:absolute;top:8px;left:8px;width:27px;height:27px;border-radius:999px;display:grid;place-items:center;
-    font-size:15px;color:var(--ink-soft);background:rgba(255,255,255,.55);z-index:2;line-height:1;transition:.15s}
-  .card .save:hover{background:#fff;transform:scale(1.12)}
-  .card .save.on{color:var(--decline)}
+  .card .del{position:absolute;top:7px;left:7px;width:24px;height:24px;border-radius:999px;display:grid;place-items:center;
+    font-size:16px;line-height:1;color:var(--ink-soft);background:rgba(255,255,255,.55);z-index:2;transition:.15s}
+  .card .del:hover{background:#fff;color:var(--decline);transform:scale(1.12)}
+  .card.custom-item{background:linear-gradient(180deg,#FBF6E8,#F1E9D4);border-color:rgba(201,162,39,.4)}
   .card.too-pricey{opacity:.5}
   .card.flash{animation:pop .4s}
   @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
@@ -116,8 +116,6 @@
   .custom-card input.cprice{flex:0 1 120px;width:120px;font-family:"Space Mono",monospace;font-weight:700;font-variant-numeric:tabular-nums}
   .custom-card .emoji-pick{flex:0 0 auto;width:46px;height:46px;border-radius:11px;background:#fff;border:1px solid rgba(255,255,255,.15);font-size:24px;display:grid;place-items:center;transition:.15s}
   .custom-card .emoji-pick:hover{background:#fffdf2;transform:translateY(-1px)}
-  .custom-card .save-btn{flex:0 0 auto;background:transparent;border:1.5px solid rgba(230,199,90,.55);color:var(--gold-lite);font-weight:700;font-size:14px;padding:10px 14px;border-radius:11px;transition:.15s;}
-  .custom-card .save-btn:hover{background:rgba(230,199,90,.14)}
   .custom-card .add{background:var(--gold);color:var(--ink);font-weight:700;font-size:14px;padding:11px 18px;border-radius:11px;transition:.15s;flex:0 0 auto;}
   .custom-card .add:hover{background:var(--gold-lite)}
   .emoji-pop{position:absolute;bottom:calc(100% + 8px);left:14px;background:var(--paper);border-radius:14px;box-shadow:var(--shadow);
@@ -304,22 +302,6 @@
   .em-foot{padding:18px 24px 22px;text-align:center;font-size:11.5px;color:var(--ink-soft);line-height:1.6}
   .em-foot a{color:var(--ink-soft)}
 
-  /* ---------- SAVED / WISHLIST ---------- */
-  .icon-btn .badge{position:absolute;top:-5px;right:-5px;background:var(--gold);color:var(--ink);
-    font-family:"Space Mono",monospace;font-size:10px;font-weight:700;min-width:17px;height:17px;padding:0 4px;border-radius:999px;display:grid;place-items:center}
-  .ord-head .head-act{margin-left:auto;margin-right:8px;font-size:13px;font-weight:700;color:var(--ink);border:1.5px solid var(--line);border-radius:9px;padding:6px 11px}
-  .ord-head .head-act:hover{border-color:var(--gold);background:#fffdf2}
-  .sv-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1.5px dashed var(--line)}
-  .sv-item:last-child{border-bottom:none}
-  .sv-item .sv-e{font-size:27px;flex:0 0 auto}
-  .sv-item .sv-n{flex:1 1 auto;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sv-item .sv-p{font-family:"Space Mono",monospace;font-weight:700;font-size:13px;color:var(--cash);flex:0 0 auto}
-  .sv-item .sv-add{flex:0 0 auto;background:var(--ink);color:var(--paper);font-weight:700;font-size:12.5px;padding:8px 12px;border-radius:9px}
-  .sv-item .sv-add:hover{background:#0c2018}
-  .sv-item .sv-add:disabled{opacity:.4;cursor:not-allowed}
-  .sv-item .sv-x{flex:0 0 auto;width:28px;height:28px;border-radius:8px;color:var(--ink-soft);font-size:17px;display:grid;place-items:center}
-  .sv-item .sv-x:hover{background:rgba(200,85,61,.12);color:var(--decline)}
-
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -357,7 +339,6 @@
       <div class="stat"><div class="k">Orders</div><div class="v tnum" id="orderCount">0</div></div>
     </div>
     <div class="reg-tools">
-      <button class="icon-btn" id="savedBtn" title="Saved items" aria-label="View saved items">♡<span class="badge" id="savedBadge" style="display:none">0</span></button>
       <button class="icon-btn" id="ordersBtn" title="Your orders" aria-label="View your orders">📦</button>
       <button class="icon-btn" id="muteBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
       <button class="icon-btn" id="resetBtn" title="New spree" aria-label="Start a new spree">↺</button>
@@ -368,7 +349,7 @@
     <div>
       <div class="section-head">
         <h2>The store</h2>
-        <span class="hint">Tap to add. Tap again to stack.</span>
+        <span class="hint">Tap to add. Make your own below.</span>
       </div>
       <div class="catalog" id="catalog"></div>
     </div>
@@ -493,14 +474,6 @@
   </div>
 </div>
 
-<!-- SAVED / WISHLIST -->
-<div id="saved" role="dialog" aria-modal="true">
-  <div class="ord-card">
-    <div class="ord-head"><h3>Saved for later</h3><button class="head-act" id="savedAddAll">Add all to cart</button><button class="closeX" id="savedClose" aria-label="Close">×</button></div>
-    <div class="ord-body" id="savedBody"></div>
-  </div>
-</div>
-
 <div id="toast">Not enough left for that 😬</div>
 
 <script>
@@ -534,7 +507,7 @@
     {e:"🏠", k:"Delivered",      s:"Enjoy responsibly"},
   ];
 
-  const state = { budget:0, balance:0, spent:0, cart:new Map(), orders:[], saved:[], seq:1000 };
+  const state = { budget:0, balance:0, spent:0, cart:new Map(), orders:[], customs:[], seq:1000 };
   let muted=false, audioCtx=null;
 
   /* ---------- INTRO ---------- */
@@ -550,35 +523,40 @@
   function begin(){
     const v=parseFloat(input.value.replace(/[^\d.]/g,""));
     if(!v||v<=0){input.focus();input.style.borderColor="var(--decline)";setTimeout(()=>input.style.borderColor="",600);return;}
-    Object.assign(state,{budget:v,balance:v,spent:0,cart:new Map(),orders:[],saved:[],seq:1000});
+    Object.assign(state,{budget:v,balance:v,spent:0,cart:new Map(),orders:[],customs:[],seq:1000});
     intro.style.display="none";app.classList.add("live");
-    buildCatalog();setBalanceInstant(v);render();updateSavedUI();
+    buildCatalog();setBalanceInstant(v);render();
   }
 
   /* ---------- CATALOG ---------- */
   const catEl=$("catalog");
   const EMOJIS=["🛍️","👟","👜","⌚","💍","💎","👑","📱","💻","🎧","🎮","🕹️","📷","🚗","🏎️","🏠","✈️","🛥️","🚀","🎸","🎹","🎨","🖼️","📚","🍕","🍔","🍣","🍰","☕","🍷","🐶","🐱","🌸","💄","👗","👠","🧴","🪙","🎁","💐","⚽","🏀","🎾","🏝️","⛵","🛵","🚲","🧸"];
-  let customEmoji="🛍️";
+  let customEmoji="🛍️",customSeq=0;
+
+  function makeCard(name,price,emoji,cid){
+    const b=document.createElement("button");
+    b.className="card"+(cid?" custom-item":"");
+    b.dataset.name=name;b.dataset.price=price;b.dataset.emoji=emoji;if(cid)b.dataset.cid=cid;
+    b.innerHTML=`${cid?`<span class="del" role="button" tabindex="0" title="Remove from store" aria-label="Remove ${escapeHtml(name)}">×</span>`:""}
+      <span class="owned">0</span><span class="emoji">${emoji}</span>
+      <span class="name">${escapeHtml(name)}</span><span class="price">${fmt(price)}</span>`;
+    b.addEventListener("click",ev=>addToCart(name,price,emoji,b,ev));
+    if(cid){
+      const del=b.querySelector(".del");
+      del.addEventListener("click",ev=>{ev.stopPropagation();removeCustom(cid);});
+      del.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();ev.stopPropagation();removeCustom(cid);}});
+    }
+    return b;
+  }
+
   function buildCatalog(){
     catEl.innerHTML="";
-    CATALOG.forEach((item,idx)=>{
-      const b=document.createElement("button");
-      b.className="card";b.dataset.idx=idx;
-      b.innerHTML=`<span class="save" role="button" tabindex="0" title="Save for later" aria-label="Save ${item.n}">♡</span>
-        <span class="owned">0</span><span class="emoji">${item.e}</span>
-        <span class="name">${item.n}</span><span class="price">${fmt(item.p)}</span>`;
-      b.addEventListener("click",ev=>addToCart(item.n,item.p,item.e,b,ev));
-      const heart=b.querySelector(".save");
-      heart.addEventListener("click",ev=>{ev.stopPropagation();toggleSave(item.n,item.p,item.e);});
-      heart.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();ev.stopPropagation();toggleSave(item.n,item.p,item.e);}});
-      catEl.appendChild(b);
-    });
-    const cc=document.createElement("div");cc.className="custom-card";
+    CATALOG.forEach(item=>catEl.appendChild(makeCard(item.n,item.p,item.e,null)));
+    const cc=document.createElement("div");cc.className="custom-card";cc.id="creator";
     cc.innerHTML=`<button class="emoji-pick" id="emojiPick" title="Pick an emoji">🛍️</button>
       <input class="cname" id="cname" placeholder="Name your thing…" maxlength="40"/>
       <input class="cprice tnum" id="cprice" inputmode="decimal" placeholder="price"/>
-      <button class="save-btn" id="saveCustom" title="Save for later">♡ Save</button>
-      <button class="add" id="addCustom">Add</button>
+      <button class="add" id="addCustom">Add to store</button>
       <div class="emoji-pop" id="emojiPop"></div>`;
     catEl.appendChild(cc);
     customEmoji="🛍️";
@@ -587,33 +565,30 @@
     pop.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
       customEmoji=b.textContent;$("emojiPick").textContent=customEmoji;pop.classList.remove("show");}));
     $("emojiPick").addEventListener("click",e=>{e.stopPropagation();pop.classList.toggle("show");});
-    document.addEventListener("click",e=>{if(!e.target.closest(".custom-card"))pop.classList.remove("show");});
     $("cprice").addEventListener("input",e=>{const raw=e.target.value.replace(/[^\d.]/g,"");
       e.target.value=raw===""?"":Number(raw.split(".")[0]||0).toLocaleString("en-US")+(raw.includes(".")?"."+(raw.split(".")[1]||""):"");});
     $("addCustom").addEventListener("click",addCustom);
-    $("saveCustom").addEventListener("click",saveCustom);
     $("cname").addEventListener("keydown",e=>{if(e.key==="Enter")addCustom();});
     $("cprice").addEventListener("keydown",e=>{if(e.key==="Enter")addCustom();});
   }
-  function readCustom(){
+  document.addEventListener("click",e=>{const pop=$("emojiPop");if(pop&&!e.target.closest(".custom-card"))pop.classList.remove("show");});
+
+  function addCustom(){
     const name=($("cname").value||"").trim()||"Mystery splurge";
     const price=parseFloat($("cprice").value.replace(/[^\d.]/g,""));
-    return {name,price};
-  }
-  function addCustom(){
-    const {name,price}=readCustom();
     if(!price||price<=0){$("cprice").focus();return;}
-    if(addToCart(name,price,customEmoji,null,null)){$("cname").value="";$("cprice").value="";$("cname").focus();}
-  }
-  function saveCustom(){
-    const {name,price}=readCustom();
-    if(!price||price<=0){$("cprice").focus();return;}
-    if(!isSaved(name,price,customEmoji))state.saved.push({name,price,emoji:customEmoji});
-    updateSavedUI();
-    const btn=$("saveCustom");btn.textContent="Saved ✓";
-    chaching();
-    setTimeout(()=>btn.textContent="♡ Save",1300);
+    const cid="c"+(++customSeq);
+    state.customs.push({n:name,p:price,e:customEmoji,id:cid});
+    const card=makeCard(name,price,customEmoji,cid);
+    catEl.insertBefore(card,$("creator"));
+    refreshAfford();chaching();
+    if(!reduce){card.classList.remove("flash");void card.offsetWidth;card.classList.add("flash");}
+    card.scrollIntoView({behavior:reduce?"auto":"smooth",block:"nearest"});
     $("cname").value="";$("cprice").value="";$("cname").focus();
+  }
+  function removeCustom(cid){
+    const i=state.customs.findIndex(c=>c.id===cid);if(i>=0)state.customs.splice(i,1);
+    const card=catEl.querySelector(`.card[data-cid="${cid}"]`);if(card)card.remove();
   }
 
   const cartTotal=()=>[...state.cart.values()].reduce((s,l)=>s+l.price*l.qty,0);
@@ -633,13 +608,13 @@
   }
   function syncBadges(){
     catEl.querySelectorAll(".card").forEach(c=>{
-      const it=CATALOG[+c.dataset.idx];if(!it)return;
-      const tot=[...state.cart.values()].filter(l=>l.name===it.n).reduce((s,l)=>s+l.qty,0);
+      const key=c.dataset.name+"|"+(+c.dataset.price);
+      const line=state.cart.get(key);const tot=line?line.qty:0;
       c.querySelector(".owned").textContent=tot;c.classList.toggle("has",tot>0);
     });
   }
   function flashCardFor(name){
-    const card=[...catEl.querySelectorAll(".card")].find(c=>{const it=CATALOG[+c.dataset.idx];return it&&it.n===name;});
+    const card=[...catEl.querySelectorAll(".card")].find(c=>c.dataset.name===name);
     if(card){card.classList.remove("flash");void card.offsetWidth;card.classList.add("flash");}
   }
   function adjustQty(key,delta){
@@ -687,7 +662,7 @@
     $("orderCount").textContent=state.orders.length;renderCart();refreshAfford();}
   function refreshAfford(){
     const avail=available();
-    catEl.querySelectorAll(".card").forEach(c=>{const it=CATALOG[+c.dataset.idx];c.classList.toggle("too-pricey",it.p>avail+1e-6);});
+    catEl.querySelectorAll(".card").forEach(c=>c.classList.toggle("too-pricey",(+c.dataset.price)>avail+1e-6));
   }
   function renderCart(animate){
     const arr=[...state.cart.entries()];
@@ -891,52 +866,9 @@
   $("mailCopy").addEventListener("click",copyReceipt);
   emailEl.addEventListener("click",e=>{if(e.target===emailEl)emailEl.classList.remove("show");});
 
-  /* ---------- SAVED / WISHLIST ---------- */
-  const savedEl=$("saved");
-  function isSaved(name,price,emoji){return state.saved.some(s=>s.name===name&&s.price===price&&s.emoji===emoji);}
-  function toggleSave(name,price,emoji){
-    const i=state.saved.findIndex(s=>s.name===name&&s.price===price&&s.emoji===emoji);
-    if(i>=0)state.saved.splice(i,1); else {state.saved.push({name,price,emoji});chaching();}
-    updateSavedUI();
-    if(savedEl.classList.contains("show"))openSaved();
-  }
-  function updateSavedUI(){
-    const n=state.saved.length,b=$("savedBadge");
-    if(n>0){b.style.display="grid";b.textContent=n;}else b.style.display="none";
-    catEl.querySelectorAll(".card").forEach(c=>{
-      const it=CATALOG[+c.dataset.idx];if(!it)return;
-      const heart=c.querySelector(".save");if(!heart)return;
-      const on=isSaved(it.n,it.p,it.e);heart.classList.toggle("on",on);heart.textContent=on?"♥":"♡";
-    });
-  }
-  function openSaved(){
-    const body=$("savedBody");
-    if(state.saved.length===0){body.innerHTML=`<div class="ord-empty">Nothing saved yet.<br>Tap the ♡ on anything you're eyeing.</div>`;$("savedAddAll").style.display="none";}
-    else{$("savedAddAll").style.display="";
-      body.innerHTML=state.saved.map((s,i)=>{
-        const afford=s.price<=available()+1e-6;
-        return `<div class="sv-item"><span class="sv-e">${s.emoji}</span>
-          <span class="sv-n">${escapeHtml(s.name)}</span><span class="sv-p">${fmt(s.price)}</span>
-          <button class="sv-add" data-i="${i}" ${afford?"":"disabled title='Not enough left'"}>Add to cart</button>
-          <button class="sv-x" data-rm="${i}" title="Remove" aria-label="Remove ${escapeHtml(s.name)}">×</button></div>`;}).join("");}
-    savedEl.classList.add("show");
-  }
-  $("savedBtn").addEventListener("click",openSaved);
-  $("savedClose").addEventListener("click",()=>savedEl.classList.remove("show"));
-  savedEl.addEventListener("click",e=>{if(e.target===savedEl)savedEl.classList.remove("show");});
-  $("savedAddAll").addEventListener("click",()=>{
-    let added=0;state.saved.forEach(s=>{if(addToCart(s.name,s.price,s.emoji,null,null))added++;});
-    if(added===0)decline(); else openSaved();
-  });
-  $("savedBody").addEventListener("click",e=>{
-    const add=e.target.closest(".sv-add"),rm=e.target.closest(".sv-x");
-    if(add){const s=state.saved[+add.dataset.i];if(s)addToCart(s.name,s.price,s.emoji,null,null);openSaved();}
-    else if(rm){state.saved.splice(+rm.dataset.rm,1);updateSavedUI();openSaved();}
-  });
-
   /* ---------- TOOLS ---------- */
   $("muteBtn").addEventListener("click",function(){muted=!muted;this.textContent=muted?"🔇":"🔊";});
-  $("resetBtn").addEventListener("click",()=>{closeCheckout();ordEl.classList.remove("show");emailEl.classList.remove("show");savedEl.classList.remove("show");
+  $("resetBtn").addEventListener("click",()=>{closeCheckout();ordEl.classList.remove("show");emailEl.classList.remove("show");
     app.classList.remove("live");intro.style.display="grid";input.value="";input.focus();});
 
   /* ---------- CONFETTI ---------- */
