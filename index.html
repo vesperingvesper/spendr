@@ -85,8 +85,25 @@
   .grid{display:grid;grid-template-columns:1fr 360px;gap:22px;margin-top:22px}
   @media(max-width:860px){.grid{grid-template-columns:1fr}}
   .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:4px 2px 14px}
-  .section-head h2{color:var(--paper);font-size:20px;font-weight:800;letter-spacing:-.01em}
   .section-head .hint{color:#9fbcae;font-size:13px}
+  .browse-head{margin:2px 2px 14px}
+  .mode-switch{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:4px;gap:4px;margin-bottom:9px}
+  .mode-btn{padding:8px 16px;border-radius:999px;font-weight:700;font-size:14px;color:#cfe3d8;transition:.15s}
+  .mode-btn.active{background:var(--paper);color:var(--ink)}
+  .browse-head .hint{display:block;color:#9fbcae;font-size:13px}
+  .rcard{background:var(--paper);border-radius:16px;padding:18px 14px;text-align:left;position:relative;
+    transition:transform .12s, box-shadow .12s;border:1px solid rgba(255,255,255,.5);display:flex;flex-direction:column;gap:2px}
+  .rcard:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.22)}
+  .rcard:active{transform:translateY(0) scale(.985)}
+  .rcard .r-emoji{font-size:38px;margin-bottom:6px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.12))}
+  .rcard .r-name{font-weight:800;font-size:16px;line-height:1.1}
+  .rcard .r-tag{font-family:"Space Mono",monospace;font-size:12px;color:var(--ink-soft)}
+  .menu-head{grid-column:1/-1;display:flex;align-items:center;gap:10px;background:rgba(244,239,226,.1);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;margin-bottom:2px}
+  .menu-head .back-btn{width:36px;height:36px;flex:0 0 auto;border-radius:10px;background:var(--paper);color:var(--ink);font-size:20px;font-weight:700;display:grid;place-items:center}
+  .menu-head .back-btn:hover{background:#fff}
+  .menu-head .menu-emoji{font-size:26px}
+  .menu-head .menu-title{font-weight:800;font-size:17px;color:var(--paper)}
+  .menu-head .menu-tag{font-family:"Space Mono",monospace;font-size:12px;color:#9fbcae;margin-left:auto}
 
   .catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .card{background:var(--paper);border-radius:16px;padding:16px 14px 14px;text-align:left;position:relative;
@@ -391,9 +408,12 @@
 
   <div class="grid">
     <div>
-      <div class="section-head">
-        <h2>The store</h2>
-        <span class="hint">Tap to add. Make your own below.</span>
+      <div class="browse-head">
+        <div class="mode-switch" id="modeSwitch">
+          <button class="mode-btn active" data-mode="store">🛍️ Shopping</button>
+          <button class="mode-btn" data-mode="food">🍔 Food delivery</button>
+        </div>
+        <span class="hint" id="browseHint">Tap to add. Make your own below.</span>
       </div>
       <div class="catalog" id="catalog"></div>
     </div>
@@ -402,7 +422,7 @@
       <div class="cart-sticky">
         <div class="cart">
           <div class="cart-head">
-            <span class="t">Your cart</span>
+            <span class="t" id="cartTitle">Your cart</span>
             <span class="n" id="cartCount">0 items</span>
           </div>
           <ul id="cartLines"></ul>
@@ -428,16 +448,16 @@
 
     <!-- summary -->
     <section class="co-step step--summary">
-      <div class="co-title">Checkout</div>
-      <div class="co-sub">Review your haul before you pay.</div>
+      <div class="co-title" id="coTitle">Checkout</div>
+      <div class="co-sub" id="coSub">Review your haul before you pay.</div>
       <ul class="co-list" id="coList"></ul>
       <div class="co-rows">
         <div class="row"><span>Subtotal</span><span class="tnum" id="coSubtotal">$0</span></div>
-        <div class="row"><span>Shipping</span><span>Free (it's pretend)</span></div>
+        <div class="row"><span id="coShipRow">Shipping</span><span>Free (it's pretend)</span></div>
         <div class="row big"><span>Total</span><span class="tnum" id="coTotal">$0</span></div>
       </div>
       <div class="co-block">
-        <div class="lbl">Ship to</div>
+        <div class="lbl" id="coShipLbl">Ship to</div>
         <div class="val">You · 1 Cloud Nine Ave, Dreamland 00000</div>
       </div>
       <div class="co-block">
@@ -468,9 +488,9 @@
 
     <!-- shipping -->
     <section class="co-step step--shipping">
-      <div class="s-title">On its way</div>
+      <div class="s-title" id="sTitle">On its way</div>
       <div class="s-sub" id="shipOrderNo">Order #—</div>
-      <div class="eta"><span class="eta-label">Arriving in</span><span class="eta-time" id="etaTime">0:05</span></div>
+      <div class="eta"><span class="eta-label" id="etaLbl">Arriving in</span><span class="eta-time" id="etaTime">0:05</span></div>
       <div class="eta-bar"><i id="etaFill"></i></div>
       <ul class="track" id="track"></ul>
       <div class="co-actions"><button class="btn btn-ghost" id="coSkip" style="flex:1">Skip to the good part</button></div>
@@ -479,7 +499,7 @@
     <!-- received -->
     <section class="co-step step--received">
       <div class="unbox"><div class="loot" id="loot"></div><div class="box" id="box">📦</div></div>
-      <div class="r-title">Delivered!</div>
+      <div class="r-title" id="rTitle">Delivered!</div>
       <div class="r-sub" id="rMsg">That hit the spot.</div>
       <div class="r-line" id="rLine">Order #— · delivered just now</div>
       <div class="co-actions">
@@ -582,9 +602,45 @@
     {e:"🛵", k:"Out for delivery",s:"Almost at your door"},
     {e:"🏠", k:"Delivered",      s:"Enjoy responsibly"},
   ];
+  const FOOD_SHIP = [
+    {e:"🧾", k:"Order received",  s:"Sent to the kitchen"},
+    {e:"👨‍🍳", k:"Preparing",      s:"Chef's on it"},
+    {e:"🍳", k:"Cooking",        s:"Fresh off the heat"},
+    {e:"🛍️", k:"Packed up",       s:"Bagged and still hot"},
+    {e:"🛵", k:"On the way",      s:"Your driver's rolling"},
+    {e:"🚪", k:"Delivered",      s:"Knock knock — dig in!"},
+  ];
 
-  const state = { budget:0, balance:0, spent:0, cart:new Map(), orders:[], customs:[], seq:1000 };
-  let muted=false, audioCtx=null;
+  const RESTAURANTS = [
+    {e:"🍔", n:"Burger Barn",   tag:"American · $$", menu:[
+      {e:"🍔",n:"Classic cheeseburger",p:11},{e:"🥓",n:"Bacon double",p:15},{e:"🍟",n:"Loaded fries",p:7},
+      {e:"🧅",n:"Onion rings",p:6},{e:"🥤",n:"Thick shake",p:6},{e:"🍗",n:"Chicken sandwich",p:12}]},
+    {e:"🍕", n:"Pizza Palace",  tag:"Italian · $$", menu:[
+      {e:"🍕",n:"Pepperoni (large)",p:19},{e:"🧀",n:"Margherita",p:16},{e:"🍄",n:"Veggie supreme",p:18},
+      {e:"🥖",n:"Garlic bread",p:6},{e:"🥗",n:"Caesar salad",p:9},{e:"🥤",n:"Soda 2L",p:4}]},
+    {e:"🍣", n:"Sushi Spot",    tag:"Japanese · $$$", menu:[
+      {e:"🍣",n:"Salmon nigiri (6)",p:14},{e:"🍱",n:"Dragon roll",p:16},{e:"🍙",n:"Spicy tuna roll",p:13},
+      {e:"🍜",n:"Miso soup",p:4},{e:"🥟",n:"Gyoza (5)",p:8},{e:"🍵",n:"Green tea",p:3}]},
+    {e:"🌮", n:"Taco Town",     tag:"Mexican · $", menu:[
+      {e:"🌮",n:"Street tacos (3)",p:10},{e:"🌯",n:"Big burrito",p:12},{e:"🧀",n:"Loaded nachos",p:9},
+      {e:"🫔",n:"Quesadilla",p:8},{e:"🥑",n:"Guac & chips",p:6},{e:"🥤",n:"Horchata",p:4}]},
+    {e:"🍜", n:"Noodle House",  tag:"Asian · $$", menu:[
+      {e:"🍜",n:"Tonkotsu ramen",p:15},{e:"🍲",n:"Beef pho",p:14},{e:"🥡",n:"Pad thai",p:13},
+      {e:"🥟",n:"Pork dumplings",p:9},{e:"🍤",n:"Spring rolls",p:7},{e:"🧋",n:"Boba tea",p:6}]},
+    {e:"🥗", n:"Green Bowl",    tag:"Healthy · $$", menu:[
+      {e:"🥗",n:"Harvest salad",p:13},{e:"🥙",n:"Falafel wrap",p:11},{e:"🍲",n:"Grain bowl",p:14},
+      {e:"🥑",n:"Avocado toast",p:9},{e:"🥤",n:"Green smoothie",p:8},{e:"🍓",n:"Açaí bowl",p:10}]},
+    {e:"🍗", n:"Cluck & Co",    tag:"Fried chicken · $$", menu:[
+      {e:"🍗",n:"Fried chicken (8pc)",p:18},{e:"🍖",n:"Hot wings (10)",p:13},{e:"🥪",n:"Chicken tenders",p:11},
+      {e:"🧇",n:"Chicken & waffles",p:14},{e:"🥔",n:"Mashed potatoes",p:5},{e:"🥤",n:"Lemonade",p:4}]},
+    {e:"🍰", n:"Sweet Tooth",   tag:"Dessert · $", menu:[
+      {e:"🍰",n:"Slice of cake",p:7},{e:"🍩",n:"Donut box (6)",p:9},{e:"🍦",n:"Sundae",p:6},
+      {e:"🍪",n:"Warm cookies (4)",p:6},{e:"🧁",n:"Cupcakes (4)",p:8},{e:"🍫",n:"Brownie",p:5}]},
+  ];
+
+  const state = { budget:0, balance:0, spent:0, carts:{store:new Map(),food:new Map()}, orders:[], customs:[], seq:1000 };
+  let muted=false, audioCtx=null, mode="store", activeRestaurant=null;
+  const cart=()=>state.carts[mode];
 
   /* ---------- INTRO ---------- */
   const intro=$("intro"), app=$("app"), input=$("budgetInput");
@@ -599,9 +655,10 @@
   function begin(){
     const v=parseFloat(input.value.replace(/[^\d.]/g,""));
     if(!v||v<=0){input.focus();input.style.borderColor="var(--decline)";setTimeout(()=>input.style.borderColor="",600);return;}
-    Object.assign(state,{budget:v,balance:v,spent:0,cart:new Map(),orders:[],customs:[],seq:1000});
+    Object.assign(state,{budget:v,balance:v,spent:0,carts:{store:new Map(),food:new Map()},orders:[],customs:[],seq:1000});
+    mode="store";activeRestaurant=null;
     intro.style.display="none";app.classList.add("live");
-    buildCatalog();setBalanceInstant(v);render();
+    updateModeUI();renderBrowse();setBalanceInstant(v);render();
   }
 
   /* ---------- CATALOG ---------- */
@@ -609,14 +666,14 @@
   const EMOJIS=["🛍️","👟","👜","⌚","💍","💎","👑","📱","💻","🎧","🎮","🕹️","📷","🚗","🏎️","🏠","✈️","🛥️","🚀","🎸","🎹","🎨","🖼️","📚","🍕","🍔","🍣","🍰","☕","🍷","🐶","🐱","🌸","💄","👗","👠","🧴","🪙","🎁","💐","⚽","🏀","🎾","🏝️","⛵","🛵","🚲","🧸"];
   let customEmoji="🛍️",customSeq=0;
 
-  function makeCard(name,price,emoji,cid){
+  function makeCard(name,price,emoji,cid,rest){
     const b=document.createElement("button");
     b.className="card"+(cid?" custom-item":"");
-    b.dataset.name=name;b.dataset.price=price;b.dataset.emoji=emoji;if(cid)b.dataset.cid=cid;
+    b.dataset.name=name;b.dataset.price=price;b.dataset.emoji=emoji;if(cid)b.dataset.cid=cid;if(rest)b.dataset.rest=rest;
     b.innerHTML=`${cid?`<span class="del" role="button" tabindex="0" title="Remove from store" aria-label="Remove ${escapeHtml(name)}">×</span>`:""}
       <span class="owned">0</span><span class="emoji">${emoji}</span>
       <span class="name">${escapeHtml(name)}</span><span class="price">${fmt(price)}</span>`;
-    b.addEventListener("click",ev=>addToCart(name,price,emoji,b,ev));
+    b.addEventListener("click",ev=>addToCart(name,price,emoji,b,ev,rest));
     if(cid){
       const del=b.querySelector(".del");
       del.addEventListener("click",ev=>{ev.stopPropagation();removeCustom(cid);});
@@ -625,9 +682,29 @@
     return b;
   }
 
+  /* ---------- MODE SWITCHING ---------- */
+  function renderBrowse(){
+    if(mode==="store")buildCatalog(); else renderFood();
+    syncBadges();refreshAfford();
+  }
+  function updateModeUI(){
+    document.querySelectorAll("#modeSwitch .mode-btn").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+    $("cartTitle").textContent=mode==="food"?"Your order":"Your cart";
+    $("checkoutBtn").textContent=mode==="food"?"Checkout · place order →":"Checkout →";
+    $("browseHint").textContent=mode==="food"
+      ?(activeRestaurant?"Tap dishes to add them to your order.":"Pick a place to order from.")
+      :"Tap to add. Make your own below.";
+  }
+  function switchMode(m){
+    if(mode===m)return;
+    mode=m;activeRestaurant=null;
+    updateModeUI();renderBrowse();renderCart();
+  }
+
   function buildCatalog(){
     catEl.innerHTML="";
     CATALOG.forEach(item=>catEl.appendChild(makeCard(item.n,item.p,item.e,null)));
+    state.customs.forEach(c=>catEl.appendChild(makeCard(c.n,c.p,c.e,c.id)));
     const cc=document.createElement("div");cc.className="custom-card";cc.id="creator";
     cc.innerHTML=`<button class="emoji-pick" id="emojiPick" title="Pick an emoji">🛍️</button>
       <input class="cname" id="cname" placeholder="Name your thing…" maxlength="40"/>
@@ -647,7 +724,27 @@
     $("cname").addEventListener("keydown",e=>{if(e.key==="Enter")addCustom();});
     $("cprice").addEventListener("keydown",e=>{if(e.key==="Enter")addCustom();});
   }
-  document.addEventListener("click",e=>{const pop=$("emojiPop");if(pop&&!e.target.closest(".custom-card"))pop.classList.remove("show");});
+
+  /* ---------- FOOD DELIVERY ---------- */
+  function renderFood(){
+    catEl.innerHTML="";
+    if(activeRestaurant===null){
+      RESTAURANTS.forEach((r,i)=>{
+        const b=document.createElement("button");b.className="rcard";
+        b.innerHTML=`<span class="r-emoji">${r.e}</span><span class="r-name">${r.n}</span><span class="r-tag">${r.tag}</span>`;
+        b.addEventListener("click",()=>{activeRestaurant=i;updateModeUI();renderBrowse();});
+        catEl.appendChild(b);
+      });
+    }else{
+      const r=RESTAURANTS[activeRestaurant];
+      const head=document.createElement("div");head.className="menu-head";
+      head.innerHTML=`<button class="back-btn" id="backToRest" aria-label="Back to restaurants">←</button>
+        <span class="menu-emoji">${r.e}</span><span class="menu-title">${r.n}</span><span class="menu-tag">${r.tag}</span>`;
+      catEl.appendChild(head);
+      head.querySelector("#backToRest").addEventListener("click",()=>{activeRestaurant=null;updateModeUI();renderBrowse();});
+      r.menu.forEach(d=>catEl.appendChild(makeCard(d.n,d.p,d.e,null,r.n)));
+    }
+  }
 
   function addCustom(){
     const name=($("cname").value||"").trim()||"Mystery splurge";
@@ -667,15 +764,18 @@
     const card=catEl.querySelector(`.card[data-cid="${cid}"]`);if(card)card.remove();
   }
 
-  const cartTotal=()=>[...state.cart.values()].reduce((s,l)=>s+l.price*l.qty,0);
-  const cartCount=()=>[...state.cart.values()].reduce((s,l)=>s+l.qty,0);
+  document.addEventListener("click",e=>{const pop=$("emojiPop");if(pop&&!e.target.closest(".custom-card"))pop.classList.remove("show");});
+  document.querySelectorAll("#modeSwitch .mode-btn").forEach(b=>b.addEventListener("click",()=>switchMode(b.dataset.mode)));
+
+  const cartTotal=()=>[...cart().values()].reduce((s,l)=>s+l.price*l.qty,0);
+  const cartCount=()=>[...cart().values()].reduce((s,l)=>s+l.qty,0);
   const available=()=>state.balance-cartTotal();
 
-  function addToCart(name,price,emoji,cardEl,ev){
+  function addToCart(name,price,emoji,cardEl,ev,rest){
     if(price>available()+1e-6){decline();return false;}
     const key=name+"|"+price;
-    const ex=state.cart.get(key);
-    if(ex)ex.qty++; else state.cart.set(key,{name,price,emoji,qty:1});
+    const ex=cart().get(key);
+    if(ex)ex.qty++; else cart().set(key,{name,price,emoji,qty:1,rest});
     syncBadges();
     if(cardEl){cardEl.classList.remove("flash");void cardEl.offsetWidth;cardEl.classList.add("flash");}
     else flashCardFor(name);
@@ -685,7 +785,7 @@
   function syncBadges(){
     catEl.querySelectorAll(".card").forEach(c=>{
       const key=c.dataset.name+"|"+(+c.dataset.price);
-      const line=state.cart.get(key);const tot=line?line.qty:0;
+      const line=cart().get(key);const tot=line?line.qty:0;
       c.querySelector(".owned").textContent=tot;c.classList.toggle("has",tot>0);
     });
   }
@@ -694,12 +794,12 @@
     if(card){card.classList.remove("flash");void card.offsetWidth;card.classList.add("flash");}
   }
   function adjustQty(key,delta){
-    const l=state.cart.get(key);if(!l)return;
+    const l=cart().get(key);if(!l)return;
     if(delta>0){
       if(l.price>available()+1e-6){decline();return;}
       l.qty++;chaching();flashCardFor(l.name);
     }else{
-      if(l.qty>1)l.qty--; else state.cart.delete(key);
+      if(l.qty>1)l.qty--; else cart().delete(key);
     }
     syncBadges();renderCart();refreshAfford();
   }
@@ -735,13 +835,13 @@
   }
 
   function render(){animateBalance(state.balance);$("spent").textContent=fmt(state.spent);
-    $("orderCount").textContent=state.orders.length;renderCart();refreshAfford();}
+    $("orderCount").textContent=state.orders.length;renderCart();refreshAfford();syncBadges();}
   function refreshAfford(){
     const avail=available();
     catEl.querySelectorAll(".card").forEach(c=>c.classList.toggle("too-pricey",(+c.dataset.price)>avail+1e-6));
   }
   function renderCart(animate){
-    const arr=[...state.cart.entries()];
+    const arr=[...cart().entries()];
     const lines=$("cartLines"),empty=$("cartEmpty"),foot=$("cartFoot");
     $("cartCount").textContent=cartCount()+(cartCount()===1?" item":" items");
     if(arr.length===0){empty.style.display="block";foot.style.display="none";lines.innerHTML="";dispSub=0;return;}
@@ -769,8 +869,13 @@
   const co=$("checkout");let current=null,shipTimers=[],etaRaf=null;
   $("checkoutBtn").addEventListener("click",openCheckout);
   function openCheckout(){
-    if(state.cart.size===0)return;
-    current={no:"SPN-"+(++state.seq),items:[...state.cart.values()].map(l=>({...l})),total:cartTotal(),date:new Date()};
+    if(cart().size===0)return;
+    const items=[...cart().values()].map(l=>({...l}));
+    current={no:(mode==="food"?"EAT-":"SPN-")+(++state.seq),items,total:cartTotal(),date:new Date(),type:mode};
+    if(mode==="food"){
+      const rests=[...new Set(items.map(l=>l.rest).filter(Boolean))];
+      current.restaurant=rests.length===1?rests[0]:(rests.length>1?"Multiple spots":"Spendr Eats");
+    }
     const list=$("coList");list.innerHTML="";
     current.items.forEach(l=>{const li=document.createElement("li");
       li.innerHTML=`<span>${l.emoji} ${escapeHtml(l.name)}${l.qty>1?` <span class="q">×${l.qty}</span>`:""}</span><span>${fmt(l.price*l.qty)}</span>`;
@@ -778,6 +883,10 @@
     $("coSubtotal").textContent=fmt(current.total);
     $("coTotal").textContent=fmt(current.total);
     $("coPay").textContent="Pay "+fmt(current.total);
+    $("coTitle").textContent=mode==="food"?"Place your order":"Checkout";
+    $("coSub").textContent=mode==="food"?"Review your order before you pay.":"Review your haul before you pay.";
+    $("coShipLbl").textContent=mode==="food"?"Deliver to":"Ship to";
+    $("coShipRow").textContent=mode==="food"?"Delivery":"Shipping";
     co.dataset.step="summary";co.classList.add("show");
     setTimeout(()=>$("coPay").focus(),50);
   }
@@ -803,7 +912,7 @@
     const r=$("miniReceipt");
     let rows=current.items.map(l=>`<div class="mr-row"><span>${escapeHtml(l.name)}${l.qty>1?" ×"+l.qty:""}</span><span>${fmt(l.price*l.qty)}</span></div>`).join("");
     let bars="";for(let i=0;i<46;i++)bars+=`<i style="width:${1+Math.round(Math.random()*2)}px;${Math.random()>.7?"opacity:.55":""}"></i>`;
-    r.innerHTML=`<div style="text-align:center;font-weight:700;margin-bottom:6px">SPENDR · PAID</div>${rows}
+    r.innerHTML=`<div style="text-align:center;font-weight:700;margin-bottom:6px">${current.type==="food"?"SPENDR EATS · PAID":"SPENDR · PAID"}</div>${rows}
       <div class="mr-tot"><span>TOTAL</span><span>${fmt(current.total)}</span></div>
       <div class="barcode">${bars}</div>
       <div class="mr-meta"><span>${current.no}</span><span>${current.date.toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span></div>`;
@@ -812,9 +921,13 @@
   $("coTrack").addEventListener("click",startShipping);
   function startShipping(){
     co.dataset.step="shipping";
-    $("shipOrderNo").textContent="Order "+current.no;
+    const food=current.type==="food";
+    $("sTitle").textContent=food?"Cooking & on the way":"On its way";
+    $("etaLbl").textContent=food?"Food arriving in":"Arriving in";
+    $("shipOrderNo").textContent=(food&&current.restaurant?current.restaurant+" · ":"")+"Order "+current.no;
+    const stages=food?FOOD_SHIP:SHIP;
     const track=$("track");track.innerHTML="";
-    SHIP.forEach(s=>{const li=document.createElement("li");
+    stages.forEach(s=>{const li=document.createElement("li");
       li.innerHTML=`<span class="seg"></span><span class="node">${s.e}</span>
         <span><span class="lbl">${s.k}</span><br><span class="sub">${s.s}</span></span>`;
       track.appendChild(li);});
@@ -853,15 +966,20 @@
 
   function arriveReceived(){
     co.dataset.step="received";deliverDing();burstCenter(0.6);
-    const msgs=["That hit the spot.","Worth every fake cent.","No regrets (there's nothing to regret).","Treat secured. 💅","Dopamine: delivered."];
+    const food=current.type==="food";
+    $("rTitle").textContent=food?"Food's here! 🍔":"Delivered!";
+    const msgs=food
+      ?["Dig in while it's hot 🔥","Bon appétit 🍽️","That smells incredible.","Smacked. Enjoy!","Treat yourself — you earned it."]
+      :["That hit the spot.","Worth every fake cent.","No regrets (there's nothing to regret).","Treat secured. 💅","Dopamine: delivered."];
     $("rMsg").textContent=msgs[Math.floor(Math.random()*msgs.length)];
-    $("rLine").textContent=current.no+" · "+cartCount()+" item"+(cartCount()===1?"":"s")+" · delivered just now";
+    $("rLine").textContent=current.no+(food&&current.restaurant?" · "+current.restaurant:" · "+cartCount()+" item"+(cartCount()===1?"":"s"))+" · delivered just now";
+    $("coDone").textContent=food?"Order more":"Keep shopping";
     revealLoot();
     setTimeout(()=>$("coDone").focus(),60);
   }
   function revealLoot(){
     const loot=$("loot"),box=$("box");
-    loot.innerHTML="";box.textContent="📦";box.classList.remove("open","shake");
+    loot.innerHTML="";box.textContent=current.type==="food"?"🥡":"📦";box.classList.remove("open","shake");
     const base=reduce?0:480;
     if(!reduce){void box.offsetWidth;box.classList.add("shake");}
     const shown=current.items.slice(0,14);
@@ -878,10 +996,9 @@
   }
 
   function finalize(){
-    state.orders.unshift({no:current.no,items:current.items,total:current.total,date:current.date});
-    state.cart.clear();
-    catEl.querySelectorAll(".card").forEach(c=>{c.classList.remove("has");c.querySelector(".owned").textContent="0";});
-    current=null;closeCheckout();render();
+    state.orders.unshift({no:current.no,items:current.items,total:current.total,date:current.date,type:current.type,restaurant:current.restaurant});
+    cart().clear();
+    current=null;closeCheckout();renderBrowse();render();
   }
   $("coDone").addEventListener("click",finalize);
   $("coEmail").addEventListener("click",()=>{if(current)openEmail(current);});
@@ -896,8 +1013,9 @@
     if(state.orders.length===0){body.innerHTML=`<div class="ord-empty">No orders yet.<br>Your delivered hauls show up here.</div>`;}
     else{body.innerHTML=state.orders.map(o=>{
       const names=o.items.map(l=>l.emoji+" "+escapeHtml(l.name)+(l.qty>1?" ×"+l.qty:"")).join(" · ");
+      const head=o.type==="food"?("🍔 "+escapeHtml(o.restaurant||"Spendr Eats")):"🛍️ Shopping";
       return `<div class="ord-item"><div class="top"><span>${o.no}</span><span>${fmt(o.total)}</span></div>
-        <div class="meta">${o.date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} · Delivered</div>
+        <div class="meta">${head} · ${o.date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} · Delivered</div>
         <div class="things">${names}</div>
         <button class="ord-email" data-no="${o.no}">📧 View email receipt</button></div>`;}).join("");}
     ordEl.classList.add("show");
@@ -909,21 +1027,25 @@
   const emailEl=$("email");let mailOrder=null;
   function openEmail(o){
     mailOrder=o;
-    $("mailSubject").textContent=`Your Spendr order ${o.no} is confirmed`;
+    const food=o.type==="food";
+    $("mailSubject").textContent=food
+      ?`Your Spendr Eats order ${o.no} from ${o.restaurant||"Spendr Eats"} is on its way`
+      :`Your Spendr order ${o.no} is confirmed`;
     const rows=o.items.map(l=>`<tr><td>${l.emoji} ${escapeHtml(l.name)}${l.qty>1?` <span style="color:var(--ink-soft)">×${l.qty}</span>`:""}</td><td class="r">${fmt(l.price*l.qty)}</td></tr>`).join("");
     const dt=o.date.toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
     $("mailBody").innerHTML=`
-      <div class="em-hero"><div class="em-logo">SPENDR</div><div class="em-h">Order confirmed 🎉</div><div class="em-sub">Thanks for your imaginary business.</div></div>
+      <div class="em-hero"><div class="em-logo">${food?"SPENDR EATS 🍔":"SPENDR"}</div><div class="em-h">Order confirmed 🎉</div><div class="em-sub">${food?"Your food is being prepared.":"Thanks for your imaginary business."}</div></div>
       <div class="em-sect"><div class="em-lbl">Order ${o.no} · ${dt}</div><span class="em-status">✓ Paid &amp; delivered</span></div>
-      <div class="em-sect"><div class="em-lbl">Your haul</div>
+      ${food?`<div class="em-sect"><div class="em-lbl">From</div><div class="em-addr">${escapeHtml(o.restaurant||"Spendr Eats")}</div></div>`:""}
+      <div class="em-sect"><div class="em-lbl">${food?"Your order":"Your haul"}</div>
         <table class="em-tbl"><tbody>${rows}</tbody></table>
         <div class="em-tot">
           <div class="row"><span>Subtotal</span><span>${fmt(o.total)}</span></div>
-          <div class="row"><span>Shipping</span><span>Free</span></div>
+          <div class="row"><span>${food?"Delivery":"Shipping"}</span><span>Free</span></div>
           <div class="row big"><span>Total</span><span>${fmt(o.total)}</span></div>
         </div></div>
-      <div class="em-sect"><div class="em-lbl">Shipped to</div><div class="em-addr">You<br>1 Cloud Nine Ave<br>Dreamland 00000</div></div>
-      <div class="em-foot">A 100% pretend receipt from the Bank of Make-Believe.<br>No real money moved and nothing is actually shipping. 💸<br><a href="#" onclick="return false">Unsubscribe from imaginary emails</a></div>`;
+      <div class="em-sect"><div class="em-lbl">${food?"Delivered to":"Shipped to"}</div><div class="em-addr">You<br>1 Cloud Nine Ave<br>Dreamland 00000</div></div>
+      <div class="em-foot">A 100% pretend receipt from the Bank of Make-Believe.<br>No real money moved and no real ${food?"food is on the way":"parcel is shipping"}. 💸<br><a href="#" onclick="return false">Unsubscribe from imaginary emails</a></div>`;
     emailEl.classList.add("show");
     $("mailCopy").textContent="Copy receipt";
     setTimeout(()=>$("mailDone").focus(),50);
